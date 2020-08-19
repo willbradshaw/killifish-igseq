@@ -1,0 +1,604 @@
+'\" t
+.\"     Title: igor
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5
+.\"      Date: 2018-08-04
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "IGOR" "1" "2018-08-04" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+igor \- Inference and Generation of Repertoires
+.SH "SYNOPSIS"
+.sp
+\fBigor\fP \-arg \-\-subarg \-\-\-subsubarg
+.SH "DESCRIPTION"
+.sp
+IGoR is a C++ software designed to infer V(D)J recombination related
+processes from sequencing data such as:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Recombination model probability distribution
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Hypermutation model
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Best candidates recombination scenarios
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Generation probabilities of sequences (even hypermutated)
+.RE
+.sp
+IGoR is a free (as in freedom) software released under the
+.URL "https://www.gnu.org/licenses/quick\-guide\-gplv3.html" "GNU\-GPLv3" " "
+license.
+.sp
+This manpage gives a summary of available command lines. A more exhaustive description of the software capabilities can be found in the README document.
+.SH "AUTHOR"
+.sp
+IGoR was originally written by Quentin Marcou.
+.SH "VERSION"
+.sp
+Latest released version: 1.3.0
+.SH "COMMANDS"
+.SS "General commands summary"
+.TS
+allbox tab(:);
+lt lt.
+T{
+.sp
+Command line argument
+T}:T{
+.sp
+Description
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-h</BOUNDARY>\fP or \f[CR]<BOUNDARY>-help</BOUNDARY>\fP
+T}:T{
+.sp
+Displays IGoR&#8217;s manual. Alternatively one could use
+\f[CR]<BOUNDARY>man igor</BOUNDARY>\fP.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-v</BOUNDARY>\fP or \f[CR]<BOUNDARY>-version</BOUNDARY>\fP
+T}:T{
+.sp
+Displays IGoR&#8217;s installed version number.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-set_wd /path/to/dir/</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the working directory to \fI<BOUNDARY>/path/to/dir/</BOUNDARY>\fP,
+default is \fI<BOUNDARY>/tmp</BOUNDARY>\fP. \fB<BOUNDARY> This should be an already existing directory and
+will not be created by IGoR </BOUNDARY>\fP
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-threads N</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the number of OpenMP threads to \fI<BOUNDARY>N</BOUNDARY>\fP for alignments
+and inference/evaluation. By default IGoR will use the maximum number of
+threads.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-stdout_f /path/to/file</BOUNDARY>\fP
+T}:T{
+.sp
+Redirects the standard output to the file
+\fI<BOUNDARY>/path/to/file</BOUNDARY>\fP
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-read_seqs /path/to/file</BOUNDARY>\fP
+T}:T{
+.sp
+Reads the input sequences file
+\fI<BOUNDARY>/path/to/file</BOUNDARY>\fP and reformat it in the working directory. \fB<BOUNDARY>This step is
+necessary for running any action on sequences using the command line</BOUNDARY>\fP.
+Can be a fasta file, a csv file (with the sequence index as first column
+and the sequence in the second separated by a semicolon \fI<BOUNDARY>;</BOUNDARY>\fP) or a text
+file with one sequence per line (format recognition is based on the file
+extension). Providing this file will create a semicolon separated file
+with indexed sequences in the \fI<BOUNDARY>align</BOUNDARY>\fP folder.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-batch batchname</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the batch name. This name will be used as a
+prefix to alignment/indexed sequences files, output, infer, evaluate and
+generate folders.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-chain chainname</BOUNDARY>\fP
+T}:T{
+.sp
+Selects a model and a set of genomic template
+according to the value. Possible values for \f[CR]<BOUNDARY>chainname</BOUNDARY>\fP are: \f[CR]<BOUNDARY>alpha</BOUNDARY>\fP,
+\f[CR]<BOUNDARY>beta</BOUNDARY>\fP, \f[CR]<BOUNDARY>light</BOUNDARY>\fP, \f[CR]<BOUNDARY>heavy_naive</BOUNDARY>\fP, and \f[CR]<BOUNDARY>heavy_memory</BOUNDARY>\fP. \fB<BOUNDARY>This needs to be
+set in order to use provided genomic templates/model</BOUNDARY>\fP
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-species speciesname</BOUNDARY>\fP
+T}:T{
+.sp
+Selects a species from the set of predefined
+species. Possible values are: \f[CR]<BOUNDARY>human</BOUNDARY>\fP.\fB<BOUNDARY>This needs to be set in order to
+use provided genomic templates/model</BOUNDARY>\fP
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-set_genomic --*gene* /path/to/file.fasta</BOUNDARY>\fP
+T}:T{
+.sp
+Set a set of custom
+genomic templates for gene \fI<BOUNDARY>gene</BOUNDARY>\fP (possible values are --V,--D and --J)
+with a list of genomic templates contained in the file
+\fI<BOUNDARY>/path/to/file.fasta</BOUNDARY>\fP in fasta format. If the set of provided genomic
+templates is already fully contained (same name and same sequence) in
+the loaded model (default, custom, last_inferred), the missing ones will
+be set to zero probability keeping the ratios of the others. For
+instance providing only one already known genomic template will result
+in a model with the considered gene usage to be 1.0, all others set to
+0.0. \fB<BOUNDARY>When using this option and introducing new/modified genomic
+templates, the user will need to re-infer a model since the genomic
+templates will no longer correspond to the ones contained in the
+reference models, the model parameters are thus automatically reset to a
+uniform distribution.</BOUNDARY>\fP
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-set_CDR3_anchors --*gene*</BOUNDARY>\fP
+T}:T{
+.sp
+Load a semicolon separated file containing the indices/offset of
+the CDR3 anchors for the \fI<BOUNDARY>gene</BOUNDARY>\fP(--V or --J). The index should correspond
+to the first letter of the cysteine (for V) or tryptophan/phenylalanin
+(for J) for the nucleotide sequence of the gene. Indices are 0 based.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-set_custom_model /path/to/model_parms.txt /path/to/model_marginals.txt</BOUNDARY>\fP
+T}:T{
+.sp
+Use a custom model as a baseline for inference or evaluation. \fB<BOUNDARY>Note
+that this will override custom genomic templates for inference and
+evaluation</BOUNDARY>\fP. Alternatively, providing only the model parameters file
+will lead IGoR to create model marginals initialized to a uniform
+distribution.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-load_last_inferred</BOUNDARY>\fP
+T}:T{
+.sp
+Using this command will load the last inferred
+model (folder \fI<BOUNDARY>inference/final_xx.txt</BOUNDARY>\fP) as a basis for a new inference,
+evaluation or generation of synthetic sequences
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-run_demo</BOUNDARY>\fP
+T}:T{
+.sp
+Runs the demo code on 300 sequences of 60bp TCRs (mostly a
+sanity run check)
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-run_custom</BOUNDARY>\fP
+T}:T{
+.sp
+Runs the code inside the custom section of the main.cpp
+file
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>-subsample N</BOUNDARY>\fP
+T}:T{
+.sp
+Perform actions on a random subsample of \fI<BOUNDARY>N</BOUNDARY>\fP sequences.
+\fB<BOUNDARY>This flag will have different effects depending on the supplied
+commands:</BOUNDARY>\fP if the \f[CR]<BOUNDARY>-read_seqs</BOUNDARY>\fP command is used, the resulting indexed
+sequence file will be a subsample of sequences contained in the original
+file. Else, if the \f[CR]<BOUNDARY>-align</BOUNDARY>\fP command is used the alignments will be
+performed on a subsample of the indexed sequences. Else, if the
+\f[CR]<BOUNDARY>-evaluate</BOUNDARY>\fP or \f[CR]<BOUNDARY>-infer</BOUNDARY>\fP command is used the inference will be run on a
+subsample of the indexed sequences. \fI<BOUNDARY>Obviously N should be &lt; to the
+total number of sequences available. The \f[CR]<BOUNDARY>-subsample</BOUNDARY>\fP flag should be
+used in only one command of a pipeline, see the Command example section
+for details.</BOUNDARY>\fP
+T}
+.TE
+.sp
+.SS "Alignment commands summary"
+.sp
+Alignment of the sequences is performed upon detection of the \f[CR]\-align\fP
+switch in the command line. For each gene, alignment parameters can be
+set using \f[CR]\-\-V\fP,\f[CR]\-\-D\fP or \f[CR]\-\-J\fP. \fBSpecifying any of those three argument
+will cause to align only the specified genes\fP. In order to specify a set
+of parameters for all genes or force to align all genes the argument
+\f[CR]\-\-all\fP should be passed. The arguments for setting the different
+parameters are given in the table below.
+If the considered sequences are nucleotide CDR3 sequences (delimited by
+its anchors on 3\(aq and 5\(aq sides) using the command \f[CR]\-\-ntCDR3\fP alignments will
+be performed using gene anchors information as offset bounds.
+.TS
+allbox tab(:);
+lt lt.
+T{
+.sp
+Command line argument
+T}:T{
+.sp
+Description
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---thresh X</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the score threshold for the considered gene
+alignments to \fI<BOUNDARY>X</BOUNDARY>\fP. Default is 50.0 for V, 15.0 for D and 15.0 for J
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---matrix path/to/file</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the substitution matrix to the one given
+in the file. Must be \fI<BOUNDARY>','</BOUNDARY>\fP delimited. Default is a NUC44 matrix with
+stronger penalty on errors (5,-14)
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---gap_penalty X</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the alignment gap penalty to X. Default is
+50.0
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---best_align_only</BOUNDARY>\fP
+T}:T{
+.sp
+If \fI<BOUNDARY>true</BOUNDARY>\fP only keep the best alignment for each gene/allele.
+If \fI<BOUNDARY>false</BOUNDARY>\fP outputs all alignments above the score threshold. Default is
+\fI<BOUNDARY>true</BOUNDARY>\fP for V and J, and \fI<BOUNDARY>false</BOUNDARY>\fP for D.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---best_gene_only</BOUNDARY>\fP
+T}:T{
+.sp
+If \fI<BOUNDARY>true</BOUNDARY>\fP only keep alignments for best scoring gene candidate
+ (or candidates if several genes have the same maximum score).
+If \fI<BOUNDARY>false</BOUNDARY>\fP outputs alignments for every aligned gene/allele. Default is
+\fI<BOUNDARY>false</BOUNDARY>\fP for V, D and J.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---offset_bounds M N</BOUNDARY>\fP
+T}:T{
+.sp
+Constrains the possible positions of the
+alignments. The offset is defined as the position on the read to which
+the first nucleotide of the genomic template aligns (can be negative,
+e.g for V for which most of the V is on the 5' of the read and cannot be
+seen). Default values are -inf and +inf. If the \f[CR]<BOUNDARY>--ntCDR3</BOUNDARY>\fP command has been given
+provided offset bounds values will be used for genes with missing CDR3 anchors positions.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---template_spec_offset_bounds path/to/file</BOUNDARY>\fP
+T}:T{
+.sp
+Constrains the possible positions of the
+alignments differently for each genomic template. The file should be a semi colon separated
+file formated as follows: \f[CR]<BOUNDARY>gene_name;min_offset;max_offset</BOUNDARY>\fP.
+If entries are missing for some genes, values given with the \f[CR]<BOUNDARY>---offset_bounds</BOUNDARY>\fP command
+will be used. If the \f[CR]<BOUNDARY>--ntCDR3</BOUNDARY>\fP command has been given provided template specific offset bounds
+ values will be used for genes with missing CDR3 anchors positions. If non template specific entry
+ is given for the considered gene, general offset bounds values will be used.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>---reversed_offsets</BOUNDARY>\fP
+T}:T{
+.sp
+If \fI<BOUNDARY>true</BOUNDARY>\fP provided offsets are accounted for reversed offsets.
+Reversed offsets are defined relative to the last nucleotide of the read instead of the first. Reversed offsets must be &#8656;0 by construction.
+T}
+.TE
+.sp
+.SS "Inference and evaluation commands"
+.sp
+The inference is reached using the command \f[CR]\-infer\fP. Logs and models
+parameters values for each iteration will be created in the folder
+\fIinference\fP of the working directory (or \fIbatchname_inference\fP if a
+batchname was supplied).
+.sp
+Sequence evaluation is reached using the command \f[CR]\-evaluate\fP. This is
+the same as performing an iteration of the Expectation\-Maximization on
+the whole dataset and thus accepts the same arguments as \f[CR]\-infer\fP for
+arguments related to the precision of the algorithm. The logs of the
+sequences evaluation are created in the folder \fIevaluate\fP (or
+\fIbatchname_evaluate\fP if a batchname was supplied).
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Note that \-infer and \-evaluate are mutually exclusive in the same
+command since it brings ambiguity reagarding which model should be used
+for each **
+.RE
+.sp
+Optional parameters are the following:
+.TS
+allbox tab(:);
+lt lt lt.
+T{
+.sp
+Command line argument
+T}:T{
+.sp
+Description
+T}:T{
+.sp
+Available for
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--N_iter N</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the number of EM iterations for the inference to N
+T}:T{
+.sp
+inference
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--L_thresh X</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the sequence likelihood threshold to X.
+T}:T{
+.sp
+inference
+&amp; evaluation
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--P_ratio_thresh X</BOUNDARY>\fP
+T}:T{
+.sp
+Sets the probability ratio threshold to X. This
+influences how much the tree of scenarios is pruned. Setting it 0.0
+means exploring every possible scenario (exact but very slow), while
+setting it to 1.0 only explores scenarios that are more likely than the
+best scenario explored so far (very fast but inaccurate). This sets a
+trade off between speed and accuracy, the best value is the largest one
+for which the likelihood of the sequences almost doesn&#8217;t change when
+decreasing it further.
+T}:T{
+.sp
+inference &amp; evaluation
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--MLSO</BOUNDARY>\fP
+T}:T{
+.sp
+Runs the algorithm in a \fI<BOUNDARY>Viterbi like</BOUNDARY>\fP fashion. Accounts for
+the Most Likely Scenario Only (as fast as using a probability ratio
+threshold of 1.0)
+T}:T{
+.sp
+inference &amp; evaluation
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--infer_only eventnickname1 eventnickname2</BOUNDARY>\fP
+T}:T{
+.sp
+During the inference only
+the parameters of the events with nicknames listed will be updated. \fB<BOUNDARY>
+Note that not passing any event nickname will fix all events. </BOUNDARY>\fP
+T}:T{
+.sp
+inference
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--not_infer eventnickname1 eventnickname2</BOUNDARY>\fP
+T}:T{
+.sp
+Opposite command to the
+one above, will fix the parameters of the listed events
+T}:T{
+.sp
+inference
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--fix_err</BOUNDARY>\fP
+T}:T{
+.sp
+In the same vein as the two commands above, this one will
+fix the parameters related to the error rate.
+T}:T{
+.sp
+inference
+T}
+.TE
+.sp
+.SS "Outputs"
+.sp
+Outputs or Counters in the C++ interface are scenario/sequence
+statistics, each individually presented below. They are all written in
+the \fIoutput\fP folder (or \fIbatchname_output\fP if a batchname was supplied).
+.sp
+In order to specify outputs use the \f[CR]\-output\fP argument, and detail the
+desired list of outputs. Outputs are tied to the exploration of
+scenarios and thus require to have \f[CR]\-infer\fP or \f[CR]\-evaluate\fP in the same
+command. Note that although it might be interesting to track some
+outputs during the inference for debugging purposes, best practice would
+be to use it along with evaluation.
+.sp
+The different outputs are detailed in the next sections.
+.sp
+Python utility functions are provided to analyze these outputs in the
+\f[CR]pygor.counters\fP submodule.
+.SS "Best scenarios"
+.sp
+\fIOutput the N best scenarios for each sequence\fP
+.sp
+Use command \f[CR]\-\-scenarios N\fP
+.sp
+The output of this Counter is a semicolon separated values file with one
+field for each event realization, associated mismatches/errors/mutations
+indices on the read, the scenario rank, its associated probability and
+the sequence index.
+Python functions to parse the output of the Best scenario counter can be
+found in the \f[CR]pygor.counters.bestscenarios\fP submodule.
+.SS "Generation probability"
+.sp
+\fIEstimates the probability of generation of the error free/unmutated
+ancestor sequence\fP By default only outputs an estimator of the
+probability of generation of the ancestor sequence underlying each
+sequencing read. See
+.URL "https://www.nature.com/articles/s41467\-018\-02832\-w" "IGoR\(cqs paper" " "
+for
+details.
+.sp
+Use command \f[CR]\-\-Pgen\fP
+.SS "Coverage"
+.sp
+\fICounts for each genomic nucleotide how many times it has been seen and
+how many times it was mutated/erroneous\fP
+.sp
+Use command \f[CR]\-\-coverage\fP
+.SS "Sequence generation commands"
+.sp
+Reached using the command \f[CR]\-generate N\fP where \fIN\fP is the number of
+sequences to be generated. The number of sequences to generate must be
+passed before optional arguments. Optional parameters are the following:
+.TS
+allbox tab(:);
+lt lt.
+T{
+.sp
+Command line argument
+T}:T{
+.sp
+Description
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--noerr</BOUNDARY>\fP
+T}:T{
+.sp
+Generate sequences without sequencing error (the rate and
+the way those errors are generated is controlled by the model error
+rate)
+T}
+T{
+.sp
+ \f[CR]<BOUNDARY>--CDR3</BOUNDARY>\fP
+T}:T{
+.sp
+Outputs nucleotide CDR3 from generated sequences. The file
+contains three fields: CDR3 nucleotide sequence, whether the CDR3
+anchors were found (if erroneous/mutated) and whether the sequence is
+inframe or not. Gene anchors are not yet defined for all the default
+models shipped with IGoR, use \f[CR]<BOUNDARY>-set_CDR3_anchors</BOUNDARY>\fP to set them.
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--name myname</BOUNDARY>\fP
+T}:T{
+.sp
+Prefix for the generated sequences filenames. \fB<BOUNDARY>Note
+that setting the \fI<BOUNDARY>batchname</BOUNDARY>\fP will change the generated sequences folder
+name, while setting \fI<BOUNDARY>--name</BOUNDARY>\fP will change the file names.</BOUNDARY>\fP
+T}
+T{
+.sp
+\f[CR]<BOUNDARY>--seed X</BOUNDARY>\fP
+T}:T{
+.sp
+Impose \fI<BOUNDARY>X</BOUNDARY>\fP as a seed for the random sequence generator. By
+default a random seed is obtained from the system.
+T}
+.TE
+.sp
+.SH "CONTACT"
+.sp
+For any question or issue please open an
+.URL "https://github.com/qmarcou/IGoR/issues" "issue" " "
+or email
+.MTO "quentin.marcou\(atlpt.ens.fr" "us" "."
+.SH "COPYING"
+.sp
+Free use of IGoR is granted under the terms of the \c
+.URL "https://www.gnu.org/licenses/quick\-guide\-gplv3.html" "GNU General Public License version 3" ""
+(GPLv3).

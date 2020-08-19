@@ -1,0 +1,8 @@
+channels:
+    - conda-forge
+    - bioconda
+    - r
+dependencies:
+    - igblast == 1.7.0
+    - pip:
+        - changeo == 0.4.5

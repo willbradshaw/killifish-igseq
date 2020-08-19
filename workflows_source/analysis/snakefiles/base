@@ -1,0 +1,62 @@
+##############################################################################
+## SNAKEFILE
+## PIPELINE: Immunoglobulin sequencing analysis
+## SUB-PIPELINE: Downstream analysis
+## FILE: base
+## AUTHOR: Will Bradshaw
+##############################################################################
+## Central snakefile for Ig-Seq downstream analysis pipeline
+##############################################################################
+
+#------------------------------------------------------------------------------
+# Import config file
+#------------------------------------------------------------------------------
+
+configfile: "config_analysis.yaml"
+
+#------------------------------------------------------------------------------
+# Import python libraries
+#------------------------------------------------------------------------------
+
+import os, random
+
+#------------------------------------------------------------------------------
+# Set run variables
+#------------------------------------------------------------------------------
+
+out_dir_analysis = os.path.join(out_dir, "analysis")
+log_dir_analysis = os.path.join(log_dir, "analysis")
+script_dir_analysis = "../scripts"
+aux_dir_analysis = os.path.join(os.path.dirname(config["base_path_analysis"]),
+    script_dir_analysis, "aux")
+
+env_dir_analysis = "../envs"
+env_main_analysis = os.path.join(env_dir_analysis, "igseq_analysis.yaml")
+env_pygor_analysis = os.path.join(env_dir_analysis, "igseq_analysis_pygor.yaml")
+env_r_analysis = os.path.join(env_dir_analysis, "igseq_analysis_r.yaml")
+
+minicran_dir_analysis = os.path.join(\
+    os.path.dirname(config["base_path_analysis"]), "../envs/minicran")
+minicran_rdi = os.path.join(minicran_dir_analysis, "minicran_rdi")
+minicran_save = "envs/minicran"
+
+#------------------------------------------------------------------------------
+# Set wildcard constraints
+#------------------------------------------------------------------------------
+
+wildcard_constraints:
+    sample = "[^/]+",
+    segment = "[vdj]",
+    segments = "[vdjVDJ]+",
+    set = "all|functional|nonfunctional",
+    field = "|".join(["INDIVIDUAL",config["igor_group_by"]]),
+    value = "|".join([str(i) for i in \
+        config["igor_individuals"] + config["igor_groups"]]),
+
+#------------------------------------------------------------------------------
+# Import other snakefiles
+#------------------------------------------------------------------------------
+
+include: "setup" # Prepare preprocessing files for downstream analysis
+include: "clonediv" # Assess clone-size diversity within and between groups
+include: "vdjdiv" # Assess segment usage diversity within and between groups

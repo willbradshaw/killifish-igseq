@@ -1,0 +1,4 @@
+.snakemake
+outfiles/*
+*.swp
+.snakemake*
