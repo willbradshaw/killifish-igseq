@@ -1,0 +1,38 @@
+#...
+data: 1
+
+png_density: 600
+
+data_processed:
+    pilot:
+        igor_group_entropies: "../data_processed/igor/pilot-group-entropies.tsv.gz"
+        igor_group_indels: "../data_processed/igor/pilot-group-indels.tsv.gz"
+    ageing:
+        clone_alpha: "../data_processed/spectra/ageing-clone-alpha-summarised.tsv.gz"
+        clone_kw:    "../data_processed/spectra/ageing-clone-kw-permute.tsv.gz"
+        clone_solo: "../data_processed/spectra/ageing-clone-solo-summarised.tsv.gz"
+        vj_all_alpha: "../data_processed/spectra/ageing-vj-alpha-summarised.tsv.gz"
+        vj_all_kw:    "../data_processed/spectra/ageing-vj-kw-permute.tsv.gz"
+        vj_all_solo: "../data_processed/spectra/ageing-vj-solo-summarised.tsv.gz"
+        vj_large_alpha: "../data_processed/spectra/ageing-vj-5plus-alpha-summarised.tsv.gz"
+        vj_large_kw:    "../data_processed/spectra/ageing-vj-5plus-kw-permute.tsv.gz"
+        vj_large_solo: "../data_processed/spectra/ageing-vj-5plus-solo-summarised.tsv.gz"
+        vj_small_alpha: "../data_processed/spectra/ageing-vj-4minus-alpha-summarised.tsv.gz"
+        vj_small_kw:    "../data_processed/spectra/ageing-vj-4minus-kw-permute.tsv.gz"
+        vj_small_solo: "../data_processed/spectra/ageing-vj-4minus-solo-summarised.tsv.gz"
+        vj_large_alpha_bs: "../data_processed/spectra/ageing-vj-5plus-alpha-bootstrapped.tsv.gz"
+        vj_small_alpha_bs: "../data_processed/spectra/ageing-vj-4minus-alpha-bootstrapped.tsv.gz"
+        vj_all_beta: "../data_processed/spectra/ageing-vj-beta-summarised.tsv.gz"
+        changeo_db: "../data_processed/changeo/ageing-seqs-all.tsv.gz"
+        igor_solo_entropies: "../data_processed/igor/ageing-individual-entropies.tsv.gz"
+    gut_age:
+        clone_alpha : "../data_processed/spectra/gut-age-clone-alpha-summarised.tsv.gz"
+        clone_kw : "../data_processed/spectra/gut-age-clone-kw-permute.tsv.gz"
+        vj_alpha : "../data_processed/spectra/gut-age-vj-alpha-summarised.tsv.gz"
+        vj_kw : "../data_processed/spectra/gut-age-vj-kw-permute.tsv.gz"
+        vj_beta : "../data_processed/spectra/gut-age-vj-beta-summarised.tsv.gz"
+        changeo_db : "../data_processed/changeo/gut-seqs-all.tsv.gz"
+        vj_solo: "../data_processed/spectra/gut-age-vj-solo-summarised.tsv.gz"
+        vj_large_solo: "../data_processed/spectra/gut-age-vj-5plus-solo-summarised.tsv.gz"
+        vj_small_solo: "../data_processed/spectra/gut-age-vj-4minus-solo-summarised.tsv.gz"
+        clone_solo : "../data_processed/spectra/gut-age-clone-solo-summarised.tsv.gz"

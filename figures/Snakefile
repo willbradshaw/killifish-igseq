@@ -1,0 +1,173 @@
+###############################################################################
+# FIGURE CREATION SNAKEFILE                                                   #
+###############################################################################
+
+# Config file
+configfile: "config_figures.yaml"
+
+# Modules
+import os
+
+# Directories
+raw_dir    = "figures_raw"
+out_dir    = "figures_out"
+log_dir    = "log_files"
+env_dir    = "env"
+script_dir = "scripts"
+
+# Conda environment
+env_main = os.path.join(env_dir, "igseq_figures.yaml")
+
+#==============================================================================
+# DEFAULT RULE
+#==============================================================================
+
+rule all:
+    """Generate figures."""
+    input:
+        os.path.join(out_dir, "main_igrace-pipeline.png"),
+        os.path.join(out_dir, "main_ageing-spectra.png"),
+        os.path.join(out_dir, "main_igor.png"),
+        os.path.join(out_dir, "main_gut-spectra.png"),
+        os.path.join(out_dir, "si_gut-age-pcoa.png"),
+        os.path.join(out_dir, "aux/rarefied-clones.tsv.gz"),
+        os.path.join(out_dir, "main_rarefy-glm.png"),
+        os.path.join(out_dir, "si_glm-extra.png"),
+
+#==============================================================================
+# MAIN TEXT FIGURES
+#==============================================================================
+
+rule figures_main_igseq_pipeline:
+    input:  os.path.join(raw_dir, "igrace-pipeline.svg")
+    output: os.path.join(out_dir, "main_igrace-pipeline.png")
+    log:    os.path.join(log_dir, "igrace-pipeline.log")
+    conda: env_main
+    params:
+        density = config["png_density"],
+    shell:
+        "convert -density {params.density} {input} {output} &> {log}"
+
+rule figures_aux_rdi_minicran:
+    """Prepare minicran directory for local install."""
+    input: os.path.join(env_dir, "minicran_rdi.tar.gz")
+    output:
+        repo_dir = directory(os.path.join(env_dir, "minicran_rdi_repo")),
+        lib_dir  = directory(os.path.join(env_dir, "minicran_rdi_lib")),
+    log: os.path.join(log_dir, "aux_rdi-minicran.log")
+    params:
+        env = env_dir,
+        tar_dir = lambda wildcards, input: \
+            os.path.splitext(os.path.splitext(input[0])[0])[0]
+    conda: env_main
+    shell:
+        "tar -C {params.env} -xzf {input} &> {log}; "
+        "mv {params.tar_dir} {output.repo_dir} &>> {log}; "
+        "mkdir {output.lib_dir} &>> {log}; "
+
+rule figures_main_ageing_spectra:
+    """Generate whole-body repertoire ageing figure."""
+    input:
+        design   = os.path.join(raw_dir, "ageing-design.png"),
+        repo_dir = os.path.join(env_dir, "minicran_rdi_repo"),
+        lib_dir  = os.path.join(env_dir, "minicran_rdi_lib"),
+        clone_alpha = config["data_processed"]["ageing"]["clone_alpha"],
+        clone_kw = config["data_processed"]["ageing"]["clone_kw"],
+        vj_all_alpha = config["data_processed"]["ageing"]["vj_all_alpha"],
+        vj_all_kw = config["data_processed"]["ageing"]["vj_all_kw"],
+        vj_large_alpha = config["data_processed"]["ageing"]["vj_large_alpha"],
+        vj_large_kw = config["data_processed"]["ageing"]["vj_large_kw"],
+        vj_small_alpha = config["data_processed"]["ageing"]["vj_small_alpha"],
+        vj_small_kw = config["data_processed"]["ageing"]["vj_small_kw"],
+        vj_small_alpha_bs = config["data_processed"]["ageing"]["vj_small_alpha_bs"],
+        vj_large_alpha_bs = config["data_processed"]["ageing"]["vj_large_alpha_bs"],
+        vj_all_beta = config["data_processed"]["ageing"]["vj_all_beta"],
+        changeo_ageing = config["data_processed"]["ageing"]["changeo_db"],
+    output: os.path.join(out_dir, "main_ageing-spectra.png")
+    log: os.path.join(log_dir, "main_ageing-spectra.log")
+    conda: env_main
+    params:
+        ci_effect = 0.95,
+        plot_width = 11,
+        plot_ratio = 1.33,
+    script: os.path.join(script_dir, "main_ageing-spectra.R")
+
+rule figures_main_igor:
+    """Generate killifish generative repertoire figure."""
+    input:
+        entropies_pilot_group = config["data_processed"]["pilot"]["igor_group_entropies"],
+        entropies_ageing_solo = config["data_processed"]["ageing"]["igor_solo_entropies"],
+        indels                = config["data_processed"]["pilot"]["igor_group_indels"],
+    output: os.path.join(out_dir, "main_igor.png")
+    log: os.path.join(log_dir, "main_igor.log")
+    conda: env_main
+    params:
+        plot_width = 11,
+        plot_ratio = 0.6,
+    script: os.path.join(script_dir, "main_igor.R")
+
+rule figures_main_gut_spectra:
+    """Generate intestinal repertoire ageing figure."""
+    input:
+        design   = os.path.join(raw_dir, "gut-design.png"),
+        repo_dir = os.path.join(env_dir, "minicran_rdi_repo"),
+        lib_dir  = os.path.join(env_dir, "minicran_rdi_lib"),
+        clone_alpha = config["data_processed"]["gut_age"]["clone_alpha"],
+        clone_kw = config["data_processed"]["gut_age"]["clone_kw"],
+        vj_alpha = config["data_processed"]["gut_age"]["vj_alpha"],
+        vj_kw = config["data_processed"]["gut_age"]["vj_kw"],
+        vj_beta = config["data_processed"]["gut_age"]["vj_beta"],
+        changeo_gut = config["data_processed"]["gut_age"]["changeo_db"],
+    output:
+        main = os.path.join(out_dir, "main_gut-spectra.png"),
+        pcoa = os.path.join(out_dir, "si_gut-age-pcoa.png"),
+    log: os.path.join(log_dir, "main_gut-spectra.log")
+    conda: env_main
+    params:
+        plot_width = 11,
+        plot_ratio_main = 1,
+        plot_ratio_pcoa = 0.7,
+    script: os.path.join(script_dir, "main_gut-spectra.R")
+
+rule figures_aux_rarefy_clones:
+    """Prepare rarefied clone counts for main-text figure."""
+    input:
+        ageing = config["data_processed"]["ageing"]["changeo_db"],
+        gut = config["data_processed"]["gut_age"]["changeo_db"],
+    output: os.path.join(out_dir, "aux/rarefied-clones.tsv.gz")
+    log: os.path.join(log_dir, "aux_rarefy-clones.log")
+    conda: env_main
+    params:
+        n_repeats = 20, # Iterations per sample size
+        sample_sizes = [x*100 for x in range(101)][1:],
+        individuals_excluded = ["1274", "1309"],
+        scale = "DUPCOUNT", # scale by UMI groups
+    script: os.path.join(script_dir, "aux_rarefy-clones.R")
+
+rule figures_main_rarefy_glm:
+    """Prepare rarefaction/GLM main-text figure."""
+    input:
+        rarefy = os.path.join(out_dir, "aux/rarefied-clones.tsv.gz"),
+        gut_clone = config["data_processed"]["gut_age"]["clone_solo"],
+        gut_vj_all = config["data_processed"]["gut_age"]["vj_solo"],
+        gut_vj_large = config["data_processed"]["gut_age"]["vj_large_solo"],
+        gut_vj_small = config["data_processed"]["gut_age"]["vj_small_solo"],
+        age_clone = config["data_processed"]["ageing"]["clone_solo"],
+        age_vj_all = config["data_processed"]["ageing"]["vj_all_solo"],
+        age_vj_large = config["data_processed"]["ageing"]["vj_large_solo"],
+        age_vj_small = config["data_processed"]["ageing"]["vj_small_solo"],
+    output:
+        main = os.path.join(out_dir, "main_rarefy-glm.png"),
+        si = os.path.join(out_dir, "si_glm-extra.png"),
+    log: os.path.join(log_dir, "main_rarefy-glm.log")
+    conda: env_main
+    params:
+        individuals_excluded = ["1274", "1309"],
+        plot_width_main = 11,
+        plot_ratio_main = 1.25,
+        plot_width_si   = 16,
+        plot_ratio_si   = 0.7,
+    script: os.path.join(script_dir, "main_rarefy-glm.R")
+    # TODO: Fix figure A alignment and aspect ratios
+    # TODO: Remove boxplot borders automatically (currently by hand)
+    # TODO: Fix subfigure spacing/margins
