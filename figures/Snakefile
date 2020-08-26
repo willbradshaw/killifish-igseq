@@ -168,6 +168,4 @@ rule figures_main_rarefy_glm:
         plot_width_si   = 16,
         plot_ratio_si   = 0.7,
     script: os.path.join(script_dir, "main_rarefy-glm.R")
-    # TODO: Fix figure A alignment and aspect ratios
     # TODO: Remove boxplot borders automatically (currently by hand)
-    # TODO: Fix subfigure spacing/margins
