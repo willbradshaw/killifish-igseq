@@ -9,7 +9,9 @@ configfile: "config_figures.yaml"
 import os
 
 # Directories
-raw_dir    = "figures_raw"
+input_dir  = "input_files"
+raw_dir    = os.path.join(input_dir, "raw")
+data_dir   = os.path.join(input_dir, "data")
 out_dir    = "output_files"
 log_dir    = "log_files"
 env_dir    = "env"
@@ -36,6 +38,12 @@ rule all:
         os.path.join(out_dir, "si_gut-solo-spectra.png"),
         os.path.join(out_dir, "si_gut-kw-pvalues.png"),
         os.path.join(out_dir, "si_gut-mbt-spectra.png"),
+        os.path.join(out_dir, "si_ageing-igor-segments.png"),
+        os.path.join(out_dir, "si_ageing-igor-indels.png"),
+        os.path.join(out_dir, "si_ageing-igor-entropies.png"),
+        os.path.join(out_dir, "si_pilot-igor-segments.png"),
+        os.path.join(out_dir, "si_pilot-igor-indels.png"),
+        os.path.join(out_dir, "si_pilot-igor-entropies.png"),
 
 #==============================================================================
 # MAIN TEXT FIGURES
@@ -176,6 +184,56 @@ rule figures_main_rarefy_glm:
 #==============================================================================
 # SUPPLEMENTARY FIGURES
 #==============================================================================
+
+
+#------------------------------------------------------------------------------
+# IGoR SI figures
+#------------------------------------------------------------------------------
+
+rule figures_si_pilot_igor:
+    """Prepare IGoR figures from pilot dataset."""
+    input:
+        segments = config["data_processed"]["pilot"]["igor_solo_segments"],
+        indels = config["data_processed"]["pilot"]["igor_solo_indels"],
+        entropies = config["data_processed"]["pilot"]["igor_solo_entropies"],
+    output:
+        segments = os.path.join(out_dir, "si_pilot-igor-segments.png"),
+        indels = os.path.join(out_dir, "si_pilot-igor-indels.png"),
+        entropies = os.path.join(out_dir, "si_pilot-igor-entropies.png"),
+    log: os.path.join(log_dir, "si_pilot-igor.log")
+    conda: env_main
+    params:
+        plot_width = 11,
+        plot_ratio_segments = 0.8,
+        plot_ratio_indels = 0.8,
+        plot_ratio_entropies = 0.6,
+    script: os.path.join(script_dir, "si_pilot-igor.R")
+
+rule figures_si_ageing_igor:
+    """Prepare IGoR figures from ageing dataset."""
+    input:
+        vh = os.path.join(data_dir, "nfu_vh_name_conversion.csv"),
+        dh = os.path.join(data_dir, "nfu_dh_name_conversion.csv"),
+        jh = os.path.join(data_dir, "nfu_jh_name_conversion.csv"),
+        segments = config["data_processed"]["ageing"]["igor_solo_segments"],
+        indels = config["data_processed"]["ageing"]["igor_solo_indels"],
+        entropies = config["data_processed"]["ageing"]["igor_solo_entropies"],
+    output:
+        segments = os.path.join(out_dir, "si_ageing-igor-segments.png"),
+        indels = os.path.join(out_dir, "si_ageing-igor-indels.png"),
+        entropies = os.path.join(out_dir, "si_ageing-igor-entropies.png"),
+    log: os.path.join(log_dir, "si_ageing-igor.log")
+    conda: env_main
+    params:
+        plot_width = 11,
+        plot_ratio_segments = 0.8,
+        plot_ratio_indels = 0.8,
+        plot_ratio_entropies = 0.6,
+    script: os.path.join(script_dir, "si_ageing-igor.R")
+
+#------------------------------------------------------------------------------
+# Gut dataset SI figures
+#------------------------------------------------------------------------------
 
 rule figures_si_gut_solo_spectra:
     """Prepare solo spectra from gut data."""

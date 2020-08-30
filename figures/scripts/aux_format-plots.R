@@ -65,11 +65,13 @@ theme_base <-   theme_bw() + theme(
 
 # Palettes
 gut_age_palette <- c("#e78ac3", "#F5C800")
-ageing_palette <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a")
+ageing_palette  <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a")
+pilot_palette   <- c("#999999", "#E69F00", "#56B4E9", "#009E73")
 
 # Groups
 ageing_groups <- c("39", "56", "73", "128")
 gut_age_groups <- c("6", "16")
+pilot_groups   <- paste0("2-", seq(3,6))
 
 #------------------------------------------------------------------------------
 # Basic functions

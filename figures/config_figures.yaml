@@ -7,6 +7,9 @@ data_processed:
     pilot: # Four-individual pilot dataset
         igor_group_entropies: "../data_processed/igor/pilot-group-entropies.tsv.gz"
         igor_group_indels: "../data_processed/igor/pilot-group-indels.tsv.gz"
+        igor_solo_entropies: "../data_processed/igor/pilot-individual-entropies.tsv.gz"
+        igor_solo_indels: "../data_processed/igor/pilot-individual-indels.tsv.gz"
+        igor_solo_segments: "../data_processed/igor/pilot-individual-segments.tsv.gz"
     ageing: # 32-individual ageing dataset
         # Change-O table of all unique sequences
         changeo_db: "../data_processed/changeo/ageing-seqs-all.tsv.gz"
@@ -33,6 +36,8 @@ data_processed:
         vj_small_kw:    "../data_processed/spectra/ageing-vj-4minus-kw-permute.tsv.gz"
         # IGoR generative repertoire parameter estimates
         igor_solo_entropies: "../data_processed/igor/ageing-individual-entropies.tsv.gz"
+        igor_solo_indels: "../data_processed/igor/ageing-individual-indels.tsv.gz"
+        igor_solo_segments: "../data_processed/igor/ageing-individual-segments.tsv.gz"
     gut_age:
         # Change-O table of all unique sequences
         changeo_db : "../data_processed/changeo/gut-seqs-all.tsv.gz"
