@@ -10,7 +10,7 @@ import os
 
 # Directories
 raw_dir    = "figures_raw"
-out_dir    = "figures_out"
+out_dir    = "output_files"
 log_dir    = "log_files"
 env_dir    = "env"
 script_dir = "scripts"
@@ -33,6 +33,9 @@ rule all:
         os.path.join(out_dir, "aux/rarefied-clones.tsv.gz"),
         os.path.join(out_dir, "main_rarefy-glm.png"),
         os.path.join(out_dir, "si_glm-extra.png"),
+        os.path.join(out_dir, "si_gut-solo-spectra.png"),
+        os.path.join(out_dir, "si_gut-kw-pvalues.png"),
+        os.path.join(out_dir, "si_gut-mbt-spectra.png"),
 
 #==============================================================================
 # MAIN TEXT FIGURES
@@ -169,3 +172,57 @@ rule figures_main_rarefy_glm:
         plot_ratio_si   = 0.7,
     script: os.path.join(script_dir, "main_rarefy-glm.R")
     # TODO: Remove boxplot borders automatically (currently by hand)
+
+#==============================================================================
+# SUPPLEMENTARY FIGURES
+#==============================================================================
+
+rule figures_si_gut_solo_spectra:
+    """Prepare solo spectra from gut data."""
+    input:
+        gut_age_clone = config["data_processed"]["gut_age"]["clone_solo"],
+        gut_age_vj = config["data_processed"]["gut_age"]["vj_solo"],
+        gut_group_clone = config["data_processed"]["gut_group"]["clone_solo"],
+        gut_group_vj = config["data_processed"]["gut_group"]["vj_solo"],
+    output: os.path.join(out_dir, "si_gut-solo-spectra.png")
+    log: os.path.join(log_dir, "si_gut-solo-spectra.log")
+    conda: env_main
+    params:
+        plot_width   = 16,
+        plot_ratio   = 0.7,
+    script: os.path.join(script_dir, "si_gut-solo-spectra.R")
+
+rule figures_si_gut_kw_pvalues:
+    """Prepare Kruskal-Wallis permutation p-value plots for gut data."""
+    input:
+        gut_age_clone = config["data_processed"]["gut_age"]["clone_kw"],
+        gut_age_vj = config["data_processed"]["gut_age"]["vj_kw"],
+        gut_group_clone = config["data_processed"]["gut_group"]["clone_kw"],
+        gut_group_vj = config["data_processed"]["gut_group"]["vj_kw"],
+    output: os.path.join(out_dir, "si_gut-kw-pvalues.png")
+    log: os.path.join(log_dir, "si_gut-kw-pvalues.log")
+    conda: env_main
+    params:
+        plot_width   = 11,
+        plot_ratio   = 0.6,
+    script: os.path.join(script_dir, "si_gut-kw-pvalues.R")
+
+rule figures_si_gut_mbt_spectra:
+    """Generate microbiota-transfer spectrum figure."""
+    input:
+        design   = os.path.join(raw_dir, "gut-design.png"),
+        repo_dir = os.path.join(env_dir, "minicran_rdi_repo"),
+        lib_dir  = os.path.join(env_dir, "minicran_rdi_lib"),
+        clone_alpha = config["data_processed"]["gut_group"]["clone_alpha"],
+        clone_kw = config["data_processed"]["gut_group"]["clone_kw"],
+        vj_alpha = config["data_processed"]["gut_group"]["vj_alpha"],
+        vj_kw = config["data_processed"]["gut_group"]["vj_kw"],
+        vj_beta = config["data_processed"]["gut_group"]["vj_beta"],
+        changeo_db = config["data_processed"]["gut_group"]["changeo_db"],
+    output: os.path.join(out_dir, "si_gut-mbt-spectra.png")
+    log: os.path.join(log_dir, "si_gut-mbt-spectra.log")
+    conda: env_main
+    params:
+        plot_width = 11,
+        plot_ratio = 0.8,
+    script: os.path.join(script_dir, "si_gut-mbt-spectra.R")

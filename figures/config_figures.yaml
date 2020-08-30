@@ -49,6 +49,20 @@ data_processed:
         # P-value tables from Kruskal-Wallis permutation tests
         clone_kw : "../data_processed/spectra/gut-age-clone-kw-permute.tsv.gz"
         vj_kw : "../data_processed/spectra/gut-age-vj-kw-permute.tsv.gz"
+    gut_group:
+        # Change-O table of all unique sequences
+        changeo_db : "../data_processed/changeo/gut-seqs-all.tsv.gz"
+        # Summarised clonal diversity spectra (alpha-diversity, individual diversity)
+        clone_alpha : "../data_processed/spectra/gut-group-clone-alpha-summarised.tsv.gz"
+        clone_solo : "../data_processed/spectra/gut-group-clone-solo-summarised.tsv.gz"
+        # Summarised VJ diversity spectra (alpha, beta, individual) for all clones
+        vj_alpha : "../data_processed/spectra/gut-group-vj-alpha-summarised.tsv.gz"
+        vj_beta : "../data_processed/spectra/gut-group-vj-beta-summarised.tsv.gz"
+        vj_solo: "../data_processed/spectra/gut-group-vj-solo-summarised.tsv.gz"
+        # P-value tables from Kruskal-Wallis permutation tests
+        clone_kw : "../data_processed/spectra/gut-group-clone-kw-permute.tsv.gz"
+        vj_kw : "../data_processed/spectra/gut-group-vj-kw-permute.tsv.gz"
+
 
 # Density of PNGs produces from raw SVG files
 png_density: 600

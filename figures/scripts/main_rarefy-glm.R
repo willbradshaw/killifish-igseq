@@ -71,7 +71,7 @@ make_glm_plot <- function(tab = tab_norm, predictions = glm_predictions,
     scale_colour_manual(name = "Sample type", values=palette_exp) +
     theme_base +
     theme(plot.margin = margin(0,0,0,5,"mm"),
-          panel.spacing = unit(0, "mm"),
+          panel.spacing = unit(2, "mm"),
           strip.text.y = element_text(face = "bold"),
           strip.text.x = element_text(face = "bold"))
 }
