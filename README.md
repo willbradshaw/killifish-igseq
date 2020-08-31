@@ -16,7 +16,5 @@ Processed data for figure generation is provided in this repository. To generate
 - [Install conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) and [Snakemake](https://snakemake.readthedocs.io/en/stable/getting_started/installation.html) on your system.
 - Navigate to the `figures` directory.
 - Edit `config_figures.yaml` to include paths to the required processed data files; by default it will use the files included in this repository.
-- To the model with all available cores, run:
-```snakemake --use-conda --cores```
-- To specify a number of cores, run:
-```snakemake --use-conda --cores <n_cores>```
+- To generate figures, run:
+```snakemake --use-conda```
