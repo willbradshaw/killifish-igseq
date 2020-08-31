@@ -5,6 +5,7 @@
 # Paths to processed data files
 data_processed:
     pilot: # Four-individual pilot dataset
+        changeo_db: "../data_processed/changeo/pilot-seqs-all.tsv.gz"
         igor_group_entropies: "../data_processed/igor/pilot-group-entropies.tsv.gz"
         igor_group_indels: "../data_processed/igor/pilot-group-indels.tsv.gz"
         igor_solo_entropies: "../data_processed/igor/pilot-individual-entropies.tsv.gz"

@@ -35,6 +35,7 @@ rule all:
         os.path.join(out_dir, "aux/rarefied-clones.tsv.gz"),
         os.path.join(out_dir, "main_rarefy-glm.png"),
         os.path.join(out_dir, "si_glm-extra.png"),
+        os.path.join(out_dir, "si_pilot-rdi.png"),
         os.path.join(out_dir, "si_ageing-clone-sizes.png"),
         os.path.join(out_dir, "si_ageing-solo-spectra.png"),
         os.path.join(out_dir, "si_ageing-kw-pvalues.png"),
@@ -190,49 +191,22 @@ rule figures_main_rarefy_glm:
 
 
 #------------------------------------------------------------------------------
-# IGoR SI figures
+# Pilot dataset SI figures
 #------------------------------------------------------------------------------
 
-rule figures_si_pilot_igor:
-    """Prepare IGoR figures from pilot dataset."""
+rule figures_si_pilot_rdi:
+    """Prepare RDI plots for pilot dataset."""
     input:
-        segments = config["data_processed"]["pilot"]["igor_solo_segments"],
-        indels = config["data_processed"]["pilot"]["igor_solo_indels"],
-        entropies = config["data_processed"]["pilot"]["igor_solo_entropies"],
-    output:
-        segments = os.path.join(out_dir, "si_pilot-igor-segments.png"),
-        indels = os.path.join(out_dir, "si_pilot-igor-indels.png"),
-        entropies = os.path.join(out_dir, "si_pilot-igor-entropies.png"),
-    log: os.path.join(log_dir, "si_pilot-igor.log")
+        repo_dir = os.path.join(env_dir, "minicran_rdi_repo"),
+        lib_dir  = os.path.join(env_dir, "minicran_rdi_lib"),
+        changeo_db = config["data_processed"]["pilot"]["changeo_db"],
+    output: os.path.join(out_dir, "si_pilot-rdi.png")
+    log: os.path.join(log_dir, "si_pilot-rdi.log")
     conda: env_main
     params:
         plot_width = 11,
-        plot_ratio_segments = 0.8,
-        plot_ratio_indels = 0.8,
-        plot_ratio_entropies = 0.6,
-    script: os.path.join(script_dir, "si_pilot-igor.R")
-
-rule figures_si_ageing_igor:
-    """Prepare IGoR figures from ageing dataset."""
-    input:
-        vh = os.path.join(data_dir, "nfu_vh_name_conversion.csv"),
-        dh = os.path.join(data_dir, "nfu_dh_name_conversion.csv"),
-        jh = os.path.join(data_dir, "nfu_jh_name_conversion.csv"),
-        segments = config["data_processed"]["ageing"]["igor_solo_segments"],
-        indels = config["data_processed"]["ageing"]["igor_solo_indels"],
-        entropies = config["data_processed"]["ageing"]["igor_solo_entropies"],
-    output:
-        segments = os.path.join(out_dir, "si_ageing-igor-segments.png"),
-        indels = os.path.join(out_dir, "si_ageing-igor-indels.png"),
-        entropies = os.path.join(out_dir, "si_ageing-igor-entropies.png"),
-    log: os.path.join(log_dir, "si_ageing-igor.log")
-    conda: env_main
-    params:
-        plot_width = 11,
-        plot_ratio_segments = 0.8,
-        plot_ratio_indels = 0.8,
-        plot_ratio_entropies = 0.6,
-    script: os.path.join(script_dir, "si_ageing-igor.R")
+        plot_ratio = 0.6,
+    script: os.path.join(script_dir, "si_pilot-rdi.R")
 
 #------------------------------------------------------------------------------
 # Ageing dataset SI figures
@@ -332,3 +306,48 @@ rule figures_si_gut_mbt_spectra:
         plot_width = 11,
         plot_ratio = 0.8,
     script: os.path.join(script_dir, "si_gut-mbt-spectra.R")
+
+#------------------------------------------------------------------------------
+# IGoR SI figures
+#------------------------------------------------------------------------------
+
+rule figures_si_pilot_igor:
+    """Prepare IGoR figures from pilot dataset."""
+    input:
+        segments = config["data_processed"]["pilot"]["igor_solo_segments"],
+        indels = config["data_processed"]["pilot"]["igor_solo_indels"],
+        entropies = config["data_processed"]["pilot"]["igor_solo_entropies"],
+    output:
+        segments = os.path.join(out_dir, "si_pilot-igor-segments.png"),
+        indels = os.path.join(out_dir, "si_pilot-igor-indels.png"),
+        entropies = os.path.join(out_dir, "si_pilot-igor-entropies.png"),
+    log: os.path.join(log_dir, "si_pilot-igor.log")
+    conda: env_main
+    params:
+        plot_width = 11,
+        plot_ratio_segments = 0.8,
+        plot_ratio_indels = 0.8,
+        plot_ratio_entropies = 0.6,
+    script: os.path.join(script_dir, "si_pilot-igor.R")
+
+rule figures_si_ageing_igor:
+    """Prepare IGoR figures from ageing dataset."""
+    input:
+        vh = os.path.join(data_dir, "nfu_vh_name_conversion.csv"),
+        dh = os.path.join(data_dir, "nfu_dh_name_conversion.csv"),
+        jh = os.path.join(data_dir, "nfu_jh_name_conversion.csv"),
+        segments = config["data_processed"]["ageing"]["igor_solo_segments"],
+        indels = config["data_processed"]["ageing"]["igor_solo_indels"],
+        entropies = config["data_processed"]["ageing"]["igor_solo_entropies"],
+    output:
+        segments = os.path.join(out_dir, "si_ageing-igor-segments.png"),
+        indels = os.path.join(out_dir, "si_ageing-igor-indels.png"),
+        entropies = os.path.join(out_dir, "si_ageing-igor-entropies.png"),
+    log: os.path.join(log_dir, "si_ageing-igor.log")
+    conda: env_main
+    params:
+        plot_width = 11,
+        plot_ratio_segments = 0.8,
+        plot_ratio_indels = 0.8,
+        plot_ratio_entropies = 0.6,
+    script: os.path.join(script_dir, "si_ageing-igor.R")

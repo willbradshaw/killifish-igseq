@@ -9,7 +9,7 @@ load_packages <- function(package_list){
 }
 
 packages_default <- c("alakazam", "tidyverse", "cowplot", "ape", "png",
-                      "grid", "reshape2")
+                      "grid", "reshape2", "tidytree", "ggtree")
 
 load_packages(packages_default)
 

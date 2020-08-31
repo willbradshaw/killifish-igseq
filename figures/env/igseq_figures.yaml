@@ -15,4 +15,6 @@ dependencies:
     - r-ape == 5.3
     - r-png == 0.1_7
     - r-reshape2 == 1.4.3
+    - r-tidytree == 0.3.1
+    - bioconductor-ggtree == 1.16.3
       #    - r-grid == 3.6.3
