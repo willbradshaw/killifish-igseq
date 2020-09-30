@@ -1,0 +1,7 @@
+figures/output_files
+figures/log_files
+*.swp
+figures/.snakemake
+figures/env/minicran_rdi_lib
+figures/env/minicran_rdi_repo
+*Rplots.pdf

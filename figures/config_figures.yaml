@@ -1,0 +1,74 @@
+###############################################################################
+# FIGURE CREATION CONFIG FILE                                                 #
+###############################################################################
+
+# Paths to processed data files
+data_processed:
+    pilot: # Four-individual pilot dataset
+        changeo_db: "../data_processed/changeo/pilot-seqs-all.tsv.gz"
+        igor_group_entropies: "../data_processed/igor/pilot-group-entropies.tsv.gz"
+        igor_group_indels: "../data_processed/igor/pilot-group-indels.tsv.gz"
+        igor_solo_entropies: "../data_processed/igor/pilot-individual-entropies.tsv.gz"
+        igor_solo_indels: "../data_processed/igor/pilot-individual-indels.tsv.gz"
+        igor_solo_segments: "../data_processed/igor/pilot-individual-segments.tsv.gz"
+    ageing: # 32-individual ageing dataset
+        # Change-O table of all unique sequences
+        changeo_db: "../data_processed/changeo/ageing-seqs-all.tsv.gz"
+        # Summarised clonal diversity spectra (alpha-diversity, individual diversity)
+        clone_alpha: "../data_processed/spectra/ageing-clone-alpha-summarised.tsv.gz"
+        clone_solo: "../data_processed/spectra/ageing-clone-solo-summarised.tsv.gz"
+        # Summarised VJ diversity spectra (alpha, beta, individual) for all clones
+        vj_all_alpha: "../data_processed/spectra/ageing-vj-alpha-summarised.tsv.gz"
+        vj_all_beta: "../data_processed/spectra/ageing-vj-beta-summarised.tsv.gz"
+        vj_all_solo: "../data_processed/spectra/ageing-vj-solo-summarised.tsv.gz"
+        # Summarised VJ diversity spectra (alpha, individual) for large clones
+        vj_large_alpha: "../data_processed/spectra/ageing-vj-5plus-alpha-summarised.tsv.gz"
+        vj_large_solo: "../data_processed/spectra/ageing-vj-5plus-solo-summarised.tsv.gz"
+        # Summarised VJ diversity spectra (alpha, individual) for small clones
+        vj_small_alpha: "../data_processed/spectra/ageing-vj-4minus-alpha-summarised.tsv.gz"
+        vj_small_solo: "../data_processed/spectra/ageing-vj-4minus-solo-summarised.tsv.gz"
+        # Non-summarised (per-bootstrap-replicate) VJ alpha-spectra for large/small clones
+        vj_large_alpha_bs: "../data_processed/spectra/ageing-vj-5plus-alpha-bootstrapped.tsv.gz"
+        vj_small_alpha_bs: "../data_processed/spectra/ageing-vj-4minus-alpha-bootstrapped.tsv.gz"
+        # P-value tables from Kruskal-Wallis permutation tests
+        clone_kw:    "../data_processed/spectra/ageing-clone-kw-permute.tsv.gz"
+        vj_all_kw:    "../data_processed/spectra/ageing-vj-kw-permute.tsv.gz"
+        vj_large_kw:    "../data_processed/spectra/ageing-vj-5plus-kw-permute.tsv.gz"
+        vj_small_kw:    "../data_processed/spectra/ageing-vj-4minus-kw-permute.tsv.gz"
+        # IGoR generative repertoire parameter estimates
+        igor_solo_entropies: "../data_processed/igor/ageing-individual-entropies.tsv.gz"
+        igor_solo_indels: "../data_processed/igor/ageing-individual-indels.tsv.gz"
+        igor_solo_segments: "../data_processed/igor/ageing-individual-segments.tsv.gz"
+    gut_age:
+        # Change-O table of all unique sequences
+        changeo_db : "../data_processed/changeo/gut-seqs-all.tsv.gz"
+        # Summarised clonal diversity spectra (alpha-diversity, individual diversity)
+        clone_alpha : "../data_processed/spectra/gut-age-clone-alpha-summarised.tsv.gz"
+        clone_solo : "../data_processed/spectra/gut-age-clone-solo-summarised.tsv.gz"
+        # Summarised VJ diversity spectra (alpha, beta, individual) for all clones
+        vj_alpha : "../data_processed/spectra/gut-age-vj-alpha-summarised.tsv.gz"
+        vj_beta : "../data_processed/spectra/gut-age-vj-beta-summarised.tsv.gz"
+        vj_solo: "../data_processed/spectra/gut-age-vj-solo-summarised.tsv.gz"
+        # Summarised individual VJ spectra for large/small clones
+        vj_large_solo: "../data_processed/spectra/gut-age-vj-5plus-solo-summarised.tsv.gz"
+        vj_small_solo: "../data_processed/spectra/gut-age-vj-4minus-solo-summarised.tsv.gz"
+        # P-value tables from Kruskal-Wallis permutation tests
+        clone_kw : "../data_processed/spectra/gut-age-clone-kw-permute.tsv.gz"
+        vj_kw : "../data_processed/spectra/gut-age-vj-kw-permute.tsv.gz"
+    gut_group:
+        # Change-O table of all unique sequences
+        changeo_db : "../data_processed/changeo/gut-seqs-all.tsv.gz"
+        # Summarised clonal diversity spectra (alpha-diversity, individual diversity)
+        clone_alpha : "../data_processed/spectra/gut-group-clone-alpha-summarised.tsv.gz"
+        clone_solo : "../data_processed/spectra/gut-group-clone-solo-summarised.tsv.gz"
+        # Summarised VJ diversity spectra (alpha, beta, individual) for all clones
+        vj_alpha : "../data_processed/spectra/gut-group-vj-alpha-summarised.tsv.gz"
+        vj_beta : "../data_processed/spectra/gut-group-vj-beta-summarised.tsv.gz"
+        vj_solo: "../data_processed/spectra/gut-group-vj-solo-summarised.tsv.gz"
+        # P-value tables from Kruskal-Wallis permutation tests
+        clone_kw : "../data_processed/spectra/gut-group-clone-kw-permute.tsv.gz"
+        vj_kw : "../data_processed/spectra/gut-group-vj-kw-permute.tsv.gz"
+
+
+# Density of PNGs produces from raw SVG files
+png_density: 600
