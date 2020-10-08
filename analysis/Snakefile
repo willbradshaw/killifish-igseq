@@ -1,0 +1,743 @@
+##############################################################################
+## SNAKEFILE
+## PIPELINE: Immunoglobulin sequencing analysis
+## SUB-PIPELINE: Downstream analysis
+## FILE: Snakefile
+## AUTHOR: Will Bradshaw
+##############################################################################
+## Example run snakefile for Ig-Seq downstream-analysis pipeline
+##############################################################################
+
+#==============================================================================
+# SETUP
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# Import config file
+#------------------------------------------------------------------------------
+
+configfile: "config_analysis.yaml"
+
+#------------------------------------------------------------------------------
+# Import python libraries
+#------------------------------------------------------------------------------
+
+import os, random
+
+#------------------------------------------------------------------------------
+# Set wildcard constraints
+#------------------------------------------------------------------------------
+
+fields_all = ["INDIVIDUAL"] + [str(x) for x in config["igor_group_field"].values()]
+fields_all = list(set(fields_all))
+values_group = [str(item) for sublist in config["igor_groups"].values() for item in sublist]
+values_indiv = [str(item) for sublist in config["igor_individuals"].values() for item in sublist]
+values_all = values_group + values_indiv
+values_all = list(set(values_all))
+
+wildcard_constraints:
+    dataset = "|".join(config["data_changeo"]),
+    #field = "|".join(fields_all),
+    #value = "|".join(values_all),
+
+#wildcard_constraints:
+#    sample = "[^/]+",
+#    segment = "[vdj]",
+#    segments = "[vdjVDJ]+",
+#    set = "all|functional|nonfunctional",
+#    field = "|".join(["INDIVIDUAL",config["igor_group_field"]]),
+#    value = "|".join([str(i) for i in \
+#        config["igor_individuals"] + config["igor_groups"]]),
+
+#------------------------------------------------------------------------------
+# Set up directories
+#------------------------------------------------------------------------------
+
+# Directories
+input_dir  = "input_files"
+out_dir    = "output_files"
+log_dir    = "log_files"
+env_dir    = "env"
+script_dir = "scripts"
+
+# Subdirectories
+out_dir_filter = os.path.join(out_dir, "filter/{dataset}")
+log_dir_filter = os.path.join(log_dir, "filter/{dataset}")
+out_dir_diversity = os.path.join(out_dir, "diversity/{divdir}/{dataset}")
+log_dir_diversity = os.path.join(log_dir, "diversity/{divdir}/{dataset}")
+out_dir_igor = os.path.join(out_dir, "igor")
+log_dir_igor = os.path.join(log_dir, "igor")
+out_dir_igor_split = os.path.join(out_dir_igor, "{dataset}_{field}")
+log_dir_igor_split = os.path.join(log_dir_igor, "{dataset}_{field}")
+out_dir_igor_run = os.path.join(out_dir_igor_split, "run_{value}")
+log_dir_igor_run = os.path.join(log_dir_igor_split, "run_{value}")
+
+#------------------------------------------------------------------------------
+# Specify Conda environments
+#------------------------------------------------------------------------------
+
+env_r = os.path.join(env_dir, "igseq_analysis_r.yaml")
+env_shell = os.path.join(env_dir, "igseq_analysis_shell.yaml")
+env_pygor = os.path.join(env_dir, "igseq_analysis_pygor.yaml")
+
+#==============================================================================
+# DEFAULT RULE
+#==============================================================================
+
+diversity_path = out_dir_diversity + "_diversity-{divtype}-{optype}.tsv.gz"
+kw_path = out_dir_diversity + "_kw-permute-pvalues.tsv.gz"
+igor_path = os.path.join(out_dir_igor_split, "output/{outtype}.tsv.gz")
+
+rule all:
+    input:
+        # Diversity spectra
+#        expand(diversity_path, divdir = "clone", \
+#                dataset = config["diversity_datasets"]["clone"], \
+#                divtype = ["alpha", "solo"], optype = "summarised"),
+#        expand(diversity_path, divdir = "segment_all", \
+#                dataset = config["diversity_datasets"]["segment_all"], \
+#                divtype = ["alpha", "beta", "solo"], \
+#                optype  = ["summarised", "bootstrapped"]),
+#        expand(diversity_path, divdir = "segment_5plus", \
+#                dataset = config["diversity_datasets"]["segment_5plus"], \
+#                divtype = ["alpha", "beta", "solo"], \
+#                optype  = ["summarised", "bootstrapped"]),
+#        expand(diversity_path, divdir = "segment_4minus", \
+#                dataset = config["diversity_datasets"]["segment_4minus"], \
+#                divtype = ["alpha", "beta", "solo"], \
+#                optype  = ["summarised", "bootstrapped"]),
+#        # Diversity KW p-values
+#        expand(kw_path, divdir = "clone", \
+#                dataset = config["diversity_datasets"]["clone"]),
+#        expand(kw_path, divdir = "segment_all", \
+#                dataset = config["diversity_datasets"]["segment_all"]),
+#        expand(kw_path, divdir = "segment_5plus", \
+#                dataset = config["diversity_datasets"]["segment_5plus"]),
+#        expand(kw_path, divdir = "segment_4minus", \
+#                dataset = config["diversity_datasets"]["segment_4minus"]),
+        # IGoR prep files
+        expand(igor_path, outtype = ["entropies", "segments", "indels"], \
+                dataset = config["igor_datasets"], field = "INDIVIDUAL"),
+        expand(igor_path, zip, outtype = ["entropies"] * len(config["igor_group_field"]),
+                dataset = config["igor_group_field"].keys(),
+                field = config["igor_group_field"].values()),
+        expand(igor_path, zip, outtype = ["indels"] * len(config["igor_group_field"]),
+                dataset = config["igor_group_field"].keys(),
+                field = config["igor_group_field"].values()),
+        expand(igor_path, zip, outtype = ["segments"] * len(config["igor_group_field"]),
+                dataset = config["igor_group_field"].keys(),
+                field = config["igor_group_field"].values()),
+
+#==============================================================================
+# FILTER INPUT DATA
+#==============================================================================
+
+rule filter_groups:
+    """Exclude unwanted sequence groups from downstream analysis."""
+    input: lambda wildcards: config["data_changeo"][wildcards.dataset]
+    output: out_dir_filter + "_groups-filtered.tsv.gz"
+    log: log_dir_filter + "_filter-groups.dbg"
+    conda: env_r
+    params:
+        filter_groups = lambda wildcards: config["filter_groups"][wildcards.dataset],
+        keep_complement = lambda wildcards: config["keep_complement"][wildcards.dataset],
+    script: os.path.join(script_dir, "filter_groups.R")
+
+rule filter_ambiguous_segments:
+    """Filter sequences with ambiguous segment calls from Change-O DB."""
+    input: out_dir_filter + "_groups-filtered.tsv.gz"
+    output: out_dir_filter + "_{segments}-filtered.tsv.gz"
+    log: log_dir_filter + "_filter-{segments}.dbg"
+    conda: env_r
+    params:
+        filter_V = lambda wildcards: "V" in wildcards.segments.upper(),
+        filter_D = lambda wildcards: "D" in wildcards.segments.upper(),
+        filter_J = lambda wildcards: "J" in wildcards.segments.upper(),
+    script: os.path.join(script_dir, "filter_segments.R")
+
+rule filter_clonesize_5plus:
+    """Filter out smaller clones from a segment-filtered dataset."""
+    input: out_dir_filter + "_{segments}-filtered.tsv.gz"
+    output: out_dir_filter + "_{segments}-filtered-5plus.tsv.gz"
+    log: log_dir_filter + "_filter-{segments}-clonesize-5plus.dbg"
+    conda: env_r
+    params:
+        min_size = 5,
+    script: os.path.join(script_dir, "filter_by_clonesize.R")
+
+rule filter_clonesize_4minus:
+    """Filter out smaller clones from a segment-filtered dataset."""
+    input: out_dir_filter + "_{segments}-filtered.tsv.gz"
+    output: out_dir_filter + "_{segments}-filtered-4minus.tsv.gz"
+    log: log_dir_filter + "_filter-{segments}-clonesize-4minus.dbg"
+    conda: env_r
+    params:
+        max_size = 4, # < 5
+    script: os.path.join(script_dir, "filter_by_clonesize.R")
+
+#==============================================================================
+# DIVERSITY SPECTRA
+#==============================================================================
+
+clone_field_segments = "BEST_" + config["segment_diversity_type"] + "_CALL"
+clone_fields = {"clone": "CLONE",
+                "segment_all": clone_field_segments,
+                "segment_5plus": clone_field_segments,
+                "segment_4minus": clone_field_segments}
+
+segment_div_prefix = out_dir_filter + "_" + \
+    config["segment_diversity_type"] + "-filtered"
+diversity_inputs = {"clone": out_dir_filter + "_groups-filtered.tsv.gz",
+                    "segment_all": segment_div_prefix + ".tsv.gz",
+                    "segment_5plus": segment_div_prefix + "-5plus.tsv.gz",
+                    "segment_4minus": segment_div_prefix + "-4minus.tsv.gz"
+}
+
+rule diversity_bootstraps:
+    """Compute bootstraps for diversity-spectrum generation."""
+    input: lambda wildcards: diversity_inputs[wildcards.divdir]
+    output: out_dir_diversity + "_bootstraps.tsv.gz"
+    log: log_dir_diversity + "_bootstraps.dbg"
+    conda: env_r
+    params:
+        min_n = config["div_parameters"]["min_n"],
+        max_n = config["div_parameters"]["max_n"],
+        nboot = config["div_parameters"]["nboot"],
+        clone_field = lambda wildcards: clone_fields[wildcards.divdir],
+        group_within = lambda wildcards: config["group_within"][wildcards.dataset],
+        group_between = lambda wildcards: config["group_between"][wildcards.dataset],
+    script: os.path.join(script_dir, "compute_bootstraps.R")
+
+rule diversity_table_bootstrapped:
+    """Compute diversity scores for each bootstrap replicate."""
+    input: out_dir_diversity + "_bootstraps.tsv.gz"
+    output:
+        alpha = out_dir_diversity + "_diversity-alpha-bootstrapped.tsv.gz",
+        beta = out_dir_diversity + "_diversity-beta-bootstrapped.tsv.gz",
+        gamma = out_dir_diversity + "_diversity-gamma-bootstrapped.tsv.gz",
+        solo = out_dir_diversity + "_diversity-solo-bootstrapped.tsv.gz",
+    log: log_dir_diversity + "_diversity-bootstrapped.dbg"
+    conda: env_r
+    params:
+        min_q = config["div_parameters"]["min_q"],
+        max_q = config["div_parameters"]["max_q"],
+        step_q = config["div_parameters"]["step_q"],
+        clone_field = lambda wildcards: clone_fields[wildcards.divdir],
+        group_within = lambda wildcards: config["group_within"][wildcards.dataset],
+        group_between = lambda wildcards: config["group_between"][wildcards.dataset],
+    script: os.path.join(script_dir, "compute_diversity.R")
+
+rule summarise_diversity:
+    """Summarise bootstrapped diversity spectra."""
+    input: out_dir_diversity + "_diversity-{divtype}-bootstrapped.tsv.gz"
+    output: out_dir_diversity + "_diversity-{divtype}-summarised.tsv.gz"
+    log: log_dir_diversity + "_summarise-diversity-{divtype}.dbg"
+    conda: env_r
+    params:
+        min_q = config["div_parameters"]["min_q"],
+        max_q = config["div_parameters"]["max_q"],
+        step_q = config["div_parameters"]["step_q"],
+        ci = config["div_parameters"]["ci"],
+        group_within = lambda wildcards: config["group_within"][wildcards.dataset],
+        group_between = lambda wildcards: config["group_between"][wildcards.dataset],
+    script: os.path.join(script_dir, "summarise_diversity.R")
+
+rule clone_kruskal_wallis_permute:
+    """Run Kruskal-Wallis permutation tests on bootstrapped solo diversities."""
+    input: out_dir_diversity + "_diversity-solo-bootstrapped.tsv.gz"
+    output: out_dir_diversity + "_kw-permute-pvalues.tsv.gz"
+    log: log_dir_diversity + "_kruskal-wallis-permute.dbg"
+    conda: env_r
+    params:
+        n_permutes = config["div_parameters"]["n_permute"],
+        verbose = True,
+        group_within = lambda wildcards: config["group_within"][wildcards.dataset],
+        group_between = lambda wildcards: config["group_between"][wildcards.dataset],
+    threads: config["threads"]["kw"]
+    script: os.path.join(script_dir, "kruskal_wallis_permute.R")
+
+#==============================================================================
+# IGOR ANALYSIS
+#==============================================================================
+
+#-----------------------------------------------------------------------------
+# Configure input files (other than Ig sequences)
+#-----------------------------------------------------------------------------
+
+rule igor_extract_j_anchor:
+    """Generate IGoR J-anchor file from input auxiliary file."""
+    input: os.path.join(input_dir, "igor/j.aux")
+    output: os.path.join(out_dir_igor, "anchors/J.csv")
+    log: os.path.join(log_dir_igor, "extract_j_anchor.dbg")
+    conda: env_r
+    threads: config["threads"]["min"]
+    script: os.path.join(script_dir, "extract_j_anchors.R")
+
+rule igor_extract_v_anchor:
+    """Generate IGoR V-anchor file from IMGT-gapped V-sequences."""
+    input: os.path.join(input_dir, "igor/v.fasta")
+    output: os.path.join(out_dir_igor, "anchors/V.csv")
+    log: os.path.join(log_dir_igor, "extract_v_anchor.dbg")
+    conda: env_r
+    threads: config["threads"]["min"]
+    script: os.path.join(script_dir, "extract_v_anchors.R")
+
+rule igor_configure_model:
+    """Prepare default model parameter file for use by IGoR."""
+    input: os.path.join(input_dir, "igor/model_parms.txt")
+    output: os.path.join(out_dir_igor, "default_model.txt")
+    log: os.path.join(log_dir_igor, "configure_model.dbg")
+    conda: env_shell
+    shell:
+        "cp {input} {output} &> {log}"
+
+rule igor_igblast_make_db:
+    """Make BLAST databases for IgBLAST alignment"""
+    input: os.path.join(input_dir, "igor/{segment}_no_imgt.fasta")
+    output: os.path.join(out_dir_igor, "igblast/{segment}.nin")
+    log: os.path.join(log_dir_igor, "igblast/make_blast_db_{segment}.dbg")
+    conda: env_shell
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath(os.path.splitext(output[0])[0])
+    shell:
+        "makeblastdb -parse_seqids -dbtype nucl -in {input} "
+        "-out {params.prefix} &> {log}"
+
+#-----------------------------------------------------------------------------
+# Obtain nonfunctional semi-naive sequences for IGoR
+#-----------------------------------------------------------------------------
+
+rule igor_collapse_clones:
+    """Collapse clones for SHM model construction."""
+    input: out_dir_filter + "_groups-filtered.tsv.gz"
+    output: os.path.join(out_dir_igor, "sequences/{dataset}_clones-collapsed-model.tsv.gz")
+    log: os.path.join(log_dir_igor, "sequences/{dataset}_collapse-clones-model.dbg")
+    threads: config["threads"]["max"]
+    conda: env_r
+    params:
+        exclude_na = True,
+        method = "mostCommon",
+    script: os.path.join(script_dir, "collapse_clones.R")
+
+rule igor_configure_db:
+    """Prepare Change-O DB for sequence extraction."""
+    input: os.path.join(out_dir_igor, "sequences/{dataset}_clones-collapsed-model.tsv.gz")
+    output: os.path.join(out_dir_igor, "sequences/{dataset}_igor-ready.tsv")
+    log: os.path.join(log_dir_igor, "sequences/{dataset}_configure-db.dbg")
+    conda: env_r
+    threads: config["threads"]["min"]
+    params:
+        individuals = lambda wildcards: config["igor_individuals"][wildcards.dataset],
+        group_field = lambda wildcards: config["igor_group_field"][wildcards.dataset],
+        groups = lambda wildcards: config["igor_groups"][wildcards.dataset],
+        collapsed = True,
+    script: os.path.join(script_dir, "configure_igor_db.R")
+
+rule igor_extract_sequences_initial:
+    """Extract clonal consensus sequences for functional checking."""
+    input: os.path.join(out_dir_igor, "sequences/{dataset}_igor-ready.tsv")
+    output: os.path.join(out_dir_igor, "sequences/{dataset}_igor-ready.fasta")
+    log: os.path.join(log_dir_igor, "sequences/{dataset}_extract-sequences-initial.dbg")
+    conda: env_shell
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath("_".join(output[0].split("_")[:-1])),
+        id_field = "SEQUENCE_ID",
+        seq_field = "SEQUENCE_OUT",
+        meta_fields = lambda wildcards: \
+            ["INDIVIDUAL", "REPLICATE", config["igor_group_field"][wildcards.dataset]],
+    shell:
+        "ConvertDb.py fasta -d {input} -o {output} --if {params.id_field} "
+        "--sf {params.seq_field} --mf {params.meta_fields} &> {log}"
+
+rule igor_igblast_align:
+    """Align consensus sequences to VDJ databases with IgBLAST"""
+    input:
+        seq = os.path.join(out_dir_igor, "sequences/{dataset}_igor-ready.fasta"),
+        v = os.path.join(out_dir_igor, "igblast/v.nin"),
+        d = os.path.join(out_dir_igor, "igblast/d.nin"),
+        j = os.path.join(out_dir_igor, "igblast/j.nin"),
+        aux = os.path.join(input_dir, "igor/j.aux"),
+    output: os.path.join(out_dir_igor, "igblast/{dataset}_align.fmt7")
+    log: os.path.join(log_dir_igor, "sequences/igor_{dataset}_igblast_align.dbg")
+    conda: env_shell
+    params:
+        v = lambda wildcards, input: os.path.splitext(input.v)[0],
+        d = lambda wildcards, input: os.path.splitext(input.d)[0],
+        j = lambda wildcards, input: os.path.splitext(input.j)[0],
+    threads: min(8, config["threads"]["med"]) # IgBLAST can't handle >8
+    shell:
+        "export IGDATA=${{CONDA_PREFIX}}/share/igblast; echo $IGDATA &> {log};"
+        "igblastn -ig_seqtype Ig -domain_system imgt -num_threads {threads} "
+        "-query {input.seq} -out {output} -germline_db_V {params.v} "
+        "-germline_db_J {params.j} -germline_db_D {params.d} "
+        "-auxiliary_data {input.aux} -outfmt '7 std qseq sseq btop' "
+        " &>> {log}"
+
+rule igor_changeo_make_db:
+    """Make sequence database from IgBLAST output with Change-O"""
+    input:
+        seq = os.path.join(out_dir_igor, "sequences/{dataset}_igor-ready.fasta"),
+        igblast = os.path.join(out_dir_igor, "igblast/{dataset}_align.fmt7"),
+        v = os.path.join(input_dir, "igor/v_no_imgt.fasta"),
+        d = os.path.join(input_dir, "igor/d_no_imgt.fasta"),
+        j = os.path.join(input_dir, "igor/j_no_imgt.fasta"),
+    output: os.path.join(out_dir_igor, "sequences/{dataset}_db-pass.tab")
+    conda: env_shell
+    log: os.path.join(log_dir_igor, "sequences/igor_{dataset}_make_changeo_db.dbg")
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath("_".join(output[0].split("_")[:-1])),
+    shell:
+        "MakeDb.py igblast --regions --scores --partial --asis-calls "
+        " --cdr3 -i {input.igblast} -s {input.seq} --outname {params.prefix} "
+        "-r {input.v} {input.d} {input.j} &> {log};"
+
+rule igor_changeo_split_functional:
+    """Identify and separate functional from nonfunctional sequences"""
+    input: os.path.join(out_dir_igor, "sequences/{dataset}_db-pass.tab")
+    output:
+        p = os.path.join(out_dir_igor, "sequences/{dataset}_FUNCTIONAL-T.tab"),
+        f = os.path.join(out_dir_igor, "sequences/{dataset}_FUNCTIONAL-F.tab"),
+    conda: env_shell
+    log: os.path.join(log_dir_igor, "sequences/igor_{dataset}_split_functional.dbg")
+    threads: config["threads"]["min"]
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath("_".join(output[0].split("_")[:-1])),
+    shell:
+        "ParseDb.py split -f FUNCTIONAL --outname {params.prefix} "
+        "-d {input} &> {log}; "
+        "if [[ ! -e {output.p} ]]; then touch {output.p} &>> {log}; fi; "
+        "if [[ ! -e {output.f} ]]; then touch {output.f} &>> {log}; fi"
+
+#-----------------------------------------------------------------------------
+# Prepare input Ig sequences from processed DB
+#-----------------------------------------------------------------------------
+
+checkpoint igor_split_db:
+    """Split configured DB by the specified field."""
+    input: os.path.join(out_dir_igor, "sequences/{dataset}_FUNCTIONAL-F.tab"),
+    output: directory(os.path.join(out_dir_igor_split, "sequences"))
+    log: os.path.join(log_dir_igor_split, "split-db.dbg")
+    conda: env_shell
+    shell:
+        "ParseDb.py split -d {input} -f {wildcards.field} "
+        "--outdir {output} --outname {wildcards.dataset} &> {log}"
+
+rule igor_extract_split_sequences:
+    """Extract split DB sequences into a FASTA file."""
+    input: os.path.join(out_dir_igor_split, "sequences/{dataset}_{field}-{value}.tab")
+    output: os.path.join(out_dir_igor_split, "sequences/{dataset}_{field}-{value}.fasta")
+    log: os.path.join(log_dir_igor_split, "{value}_extract_sequences.dbg")
+    conda: env_shell
+    params:
+        id_field = "SEQUENCE_ID",
+        seq_field = "SEQUENCE_INPUT",
+    shell:
+        "ConvertDb.py fasta -d {input} -o {output} --if {params.id_field} "
+        "--sf {params.seq_field} &> {log}"
+
+def aggregate_igor_seqs(wildcards):
+    """Test checkpoint approach by aggregating split IGoR prep files."""
+    checkpoint_output = checkpoints.igor_split_db.get(**wildcards).output[0]
+    return expand(os.path.join(out_dir_igor_split, "sequences/{dataset}_{field}-{value}.fasta"), \
+        value = glob_wildcards(os.path.join(checkpoint_output, "{dataset}_{field,[^-]+}-{value}.tab")).value,
+        dataset = wildcards.dataset, field = wildcards.field)
+
+rule aggregate_igor_collect_seqs:
+    """Test checkpoint approach by aggregating split IGoR prep files."""
+    input: aggregate_igor_seqs
+    output: os.path.join(out_dir_igor_split, "seqs_all.fasta")
+    log: os.path.join(log_dir_igor_split, "counts_aggregate.dbg")
+    shell:
+        "cat {input} > {output} 2> {log}"
+
+#-----------------------------------------------------------------------------
+# Infer generative models with IGoR
+#-----------------------------------------------------------------------------
+
+rule igor_read_seqs:
+    """Read in sequences for alignment with IGoR."""
+    input: os.path.join(out_dir_igor_split, "sequences/{dataset}_{field}-{value}.fasta")
+    output: os.path.join(out_dir_igor_run, "aligns/indexed_sequences.csv")
+    log: os.path.join(log_dir_igor_run, "read_seqs.dbg")
+    conda: env_shell
+    params:
+        wd = lambda wildcards, output: out_dir_igor_run.format(\
+            dataset = wildcards.dataset, field = wildcards.field, \
+            value = wildcards.value),
+    threads: config["threads"]["min"]
+    shell:
+        "igor -set_wd {params.wd} -threads {threads} "
+        "-read_seqs {input} &> {log}"
+
+rule igor_align:
+    """Align sequences to VDJ databases with IGoR."""
+    input:
+        seqs = os.path.join(out_dir_igor_run, "aligns/indexed_sequences.csv"),
+        v = os.path.join(input_dir, "igor/v_no_imgt.fasta"),
+        d = os.path.join(input_dir, "igor/d_no_imgt.fasta"),
+        j = os.path.join(input_dir, "igor/j_no_imgt.fasta"),
+        janchor = os.path.join(out_dir_igor, "anchors/J.csv"),
+        vanchor = os.path.join(out_dir_igor, "anchors/V.csv"),
+    output:
+        info = os.path.join(out_dir_igor_run, "aligns/aligns_info.out"),
+        valn = os.path.join(out_dir_igor_run, "aligns/V_alignments.csv"),
+        daln = os.path.join(out_dir_igor_run, "aligns/D_alignments.csv"),
+        jaln = os.path.join(out_dir_igor_run, "aligns/J_alignments.csv"),
+    params:
+        wd = lambda wildcards, output: out_dir_igor_run.format(\
+            dataset = wildcards.dataset, field = wildcards.field, \
+            value = wildcards.value),
+    conda: env_shell
+    log: os.path.join(log_dir_igor_run, "align.dbg")
+    threads: config["threads"]["med"]
+    shell:
+        "igor -set_wd {params.wd} -threads {threads} "
+        "-set_genomic --V {input.v} --D {input.d} --J {input.j} "
+        "-set_CDR3_anchors --V {input.vanchor} --J {input.janchor} "
+        "-align --all &> {log}"
+
+rule igor_infer_model:
+    """Infer generative model from VDJ alignments."""
+    input:
+        aligns = os.path.join(out_dir_igor_run, "aligns/aligns_info.out"),
+        v = os.path.join(input_dir, "igor/v_no_imgt.fasta"),
+        d = os.path.join(input_dir, "igor/d_no_imgt.fasta"),
+        j = os.path.join(input_dir, "igor/j_no_imgt.fasta"),
+        janchor = os.path.join(out_dir_igor, "anchors/J.csv"),
+        vanchor = os.path.join(out_dir_igor, "anchors/V.csv"),
+        model = os.path.join(out_dir_igor, "default_model.txt"),
+    output:
+        marginals = os.path.join(out_dir_igor_run, "inference/final_marginals.txt"),
+        params = os.path.join(out_dir_igor_run, "inference/final_parms.txt"),
+        info = os.path.join(out_dir_igor_run, "inference/inference_info.out"),
+    params:
+        wd = lambda wildcards, output: out_dir_igor_run.format(\
+            dataset = wildcards.dataset, field = wildcards.field, \
+            value = wildcards.value),
+    conda: env_shell
+    log: os.path.join(log_dir_igor_run, "inference.dbg")
+    threads: config["threads"]["max"]
+    shell:
+        "igor -set_wd {params.wd} -threads {threads} "
+        "-set_custom_model {input.model} "
+        "-set_genomic --V {input.v} --D {input.d} --J {input.j} "
+        "-set_CDR3_anchors --V {input.vanchor} --J {input.janchor} "
+        "-infer &> {log}"
+
+rule igor_evaluate_model:
+    """Evaluate inferred model and generate output."""
+    input:
+        infers = os.path.join(out_dir_igor_run,"inference/inference_info.out"),
+        aligns = os.path.join(out_dir_igor_run, "aligns/aligns_info.out"),
+        model = os.path.join(out_dir_igor, "default_model.txt"),
+        marginals = os.path.join(out_dir_igor_run, "inference/final_marginals.txt"),
+        params = os.path.join(out_dir_igor_run, "inference/final_parms.txt"),
+    output:
+        evals = os.path.join(out_dir_igor_run, "evaluate/inference_info.out"),
+        scenarios = os.path.join(out_dir_igor_run,\
+            "output/best_scenarios_counts.csv"),
+        pgen = os.path.join(out_dir_igor_run, "output/Pgen_counts.csv"),
+        marginals = os.path.join(out_dir_igor_run,\
+            "evaluate/final_marginals.txt"),
+        parms = os.path.join(out_dir_igor_run,\
+            "evaluate/final_parms.txt"),
+    params:
+        wd = lambda wildcards, output: out_dir_igor_run.format(\
+            dataset = wildcards.dataset, field = wildcards.field, \
+            value = wildcards.value),
+    log: os.path.join(log_dir_igor_run, "evaluate.dbg")
+    conda: env_shell
+    threads: config["threads"]["med"]
+    shell:
+        "igor -set_wd {params.wd} -threads {threads} "
+        "-set_custom_model {input.params} {input.marginals} -evaluate "
+        "-output --scenarios 5 --Pgen --coverage VJ_gene &> {log}"
+
+def aggregate_igor(wildcards):
+    """Test checkpoint approach by aggregating split IGoR prep files."""
+    checkpoint_output = checkpoints.igor_split_db.get(**wildcards).output[0]
+    return expand(os.path.join(out_dir_igor_run, "output/best_scenarios_counts.csv"), \
+        value = glob_wildcards(os.path.join(checkpoint_output, "{dataset}_{field,[^-]+}-{value}.tab")).value,
+        dataset = wildcards.dataset, field = wildcards.field)
+
+rule aggregate_igor_collect:
+    """Test checkpoint approach by aggregating split IGoR prep files."""
+    input: aggregate_igor
+    output: os.path.join(out_dir_igor_split, "counts_all.csv")
+    log: os.path.join(log_dir_igor_split, "counts_aggregate.dbg")
+    shell:
+        "cat {input} > {output} &> {log}"
+
+#-----------------------------------------------------------------------------
+# Extract model information from output files
+#-----------------------------------------------------------------------------
+
+rule extract_segment_dists:
+    """Extract V/D/J selection distributions from IGoR output."""
+    input:
+        marginals = os.path.join(out_dir_igor_run, \
+            "evaluate/final_marginals.txt"),
+        parms = os.path.join(out_dir_igor_run,\
+            "evaluate/final_parms.txt"),
+    output:
+        v = os.path.join(out_dir_igor_run, "output/segments/V.tsv"),
+        d = os.path.join(out_dir_igor_run, "output/segments/D.tsv"),
+        j = os.path.join(out_dir_igor_run, "output/segments/J.tsv"),
+        vj = os.path.join(out_dir_igor_run, "output/segments/VJ.tsv"),
+        vdj = os.path.join(out_dir_igor_run, "output/segments/VDJ.tsv"),
+    log: os.path.join(log_dir_igor_run, "extract-segment-dists.dbg")
+    conda: env_pygor
+    params:
+        script = os.path.join(script_dir, "igor_extract_segment_dists.py"),
+        indir = lambda wildcards, input: os.path.dirname(input.parms),
+        outdir = lambda wildcards, output: os.path.dirname(output.v),
+        id = lambda wildcards: wildcards.value,
+    threads: config["threads"]["min"]
+    shell:
+        "export PYTHONNOUSERSITE=True;"
+        "{params.script} {params.indir} {params.outdir} {params.id} &> {log}"
+
+rule extract_insertion_dists:
+    """Extract insertion distributions from IGoR output."""
+    input:
+        marginals = os.path.join(out_dir_igor_run,\
+            "evaluate/final_marginals.txt"),
+        parms = os.path.join(out_dir_igor_run,\
+            "evaluate/final_parms.txt"),
+    output:
+        os.path.join(out_dir_igor_run, "output/inserts.tsv"),
+    conda: env_pygor
+    log: os.path.join(log_dir_igor_run, "extract-insertion-dists.dbg")
+    params:
+        script = os.path.join(script_dir,\
+            "igor_extract_insert_dists.py"),
+        indir = lambda wildcards, input: os.path.dirname(input.parms),
+        outdir = lambda wildcards, output: os.path.dirname(output[0]),
+        id = lambda wildcards: wildcards.value,
+    threads: config["threads"]["min"]
+    shell:
+        "export PYTHONNOUSERSITE=True;"
+        "{params.script} {params.indir} {params.outdir} {params.id} &> {log}"
+
+rule extract_deletion_dists:
+    """Extract deletion distributions from IGoR output."""
+    input:
+        marginals = os.path.join(out_dir_igor_run,\
+            "evaluate/final_marginals.txt"),
+        parms = os.path.join(out_dir_igor_run,\
+            "evaluate/final_parms.txt"),
+    output:
+        os.path.join(out_dir_igor_run, "output/deletes.tsv"),
+    conda: env_pygor
+    log: os.path.join(log_dir_igor_run, "extract-deletion-dists.dbg")
+    params:
+        script = os.path.join(script_dir,\
+            "igor_extract_delete_dists.py"),
+        indir = lambda wildcards, input: os.path.dirname(input.parms),
+        outdir = lambda wildcards, output: os.path.dirname(output[0]),
+        id = lambda wildcards: wildcards.value,
+    threads: config["threads"]["min"]
+    shell:
+        "export PYTHONNOUSERSITE=True;"
+        "{params.script} {params.indir} {params.outdir} {params.id} &> {log}"
+
+rule extract_recombination_entropies:
+    """Extract recombination entropies from IGoR output."""
+    input:
+        marginals = os.path.join(out_dir_igor_run,\
+            "evaluate/final_marginals.txt"),
+        parms = os.path.join(out_dir_igor_run,\
+            "evaluate/final_parms.txt"),
+    output:
+        os.path.join(out_dir_igor_run, "output/entropies.tsv"),
+    conda: env_pygor
+    log: os.path.join(log_dir_igor_run, "extract-recombination-entropies.dbg")
+    params:
+        script = os.path.join(script_dir,\
+            "igor_extract_recombination_entropy.py"),
+        indir = lambda wildcards, input: os.path.dirname(input.parms),
+        outdir = lambda wildcards, output: os.path.dirname(output[0]),
+        id = lambda wildcards: wildcards.value,
+    threads: config["threads"]["min"]
+    shell:
+        "export PYTHONNOUSERSITE=True;"
+        "{params.script} {params.indir} {params.outdir} {params.id} &> {log}"
+
+#-----------------------------------------------------------------------------
+# Merge extracted TSVs across types and samples
+#-----------------------------------------------------------------------------
+
+rule combine_segment_dists:
+    """Combine segment distributions into a single table."""
+    input:
+        os.path.join(out_dir_igor_run, "output/segments/V.tsv"),
+        os.path.join(out_dir_igor_run, "output/segments/D.tsv"),
+        os.path.join(out_dir_igor_run, "output/segments/J.tsv"),
+        os.path.join(out_dir_igor_run, "output/segments/VJ.tsv"),
+        os.path.join(out_dir_igor_run, "output/segments/VDJ.tsv"),
+    output: os.path.join(out_dir_igor_run, "output/segments.tsv")
+    log: os.path.join(log_dir_igor_run, "combine-segment-dists.dbg")
+    conda: env_r
+    script: os.path.join(script_dir, "merge_dbs.R")
+
+rule combine_indel_dists:
+    """Combine indel distributions into a single table."""
+    input:
+        os.path.join(out_dir_igor_run, "output/inserts.tsv"),
+        os.path.join(out_dir_igor_run, "output/deletes.tsv"),
+    output: os.path.join(out_dir_igor_run, "output/indels.tsv")
+    log: os.path.join(log_dir_igor_run, "combine-indel-dists.dbg")
+    conda: env_r
+    script: os.path.join(script_dir, "merge_dbs.R")
+
+def collect_igor_segments(wildcards):
+    """Collect segment DBs from different samples."""
+    checkpoint_output = checkpoints.igor_split_db.get(**wildcards).output[0]
+    return expand(os.path.join(out_dir_igor_run, "output/segments.tsv"), \
+        value = glob_wildcards(os.path.join(checkpoint_output, "{dataset}_{field,[^-]+}-{value}.tab")).value,
+        dataset = wildcards.dataset, field = wildcards.field)
+
+rule merge_segment_dists:
+    """Merge IGoR segment choice distributions across all groups."""
+    input: collect_igor_segments
+    output: os.path.join(out_dir_igor_split, "output/segments.tsv.gz")
+    log: os.path.join(log_dir_igor_split, "merge_segment_dists.dbg")
+    conda: env_r
+    threads: config["threads"]["min"]
+    script: os.path.join(script_dir, "merge_dbs.R")
+
+def collect_igor_indels(wildcards):
+    """Collect indel DBs from different samples."""
+    checkpoint_output = checkpoints.igor_split_db.get(**wildcards).output[0]
+    return expand(os.path.join(out_dir_igor_run, "output/indels.tsv"), \
+        value = glob_wildcards(os.path.join(checkpoint_output, "{dataset}_{field,[^-]+}-{value}.tab")).value,
+        dataset = wildcards.dataset, field = wildcards.field)
+
+rule merge_indel_dists:
+    """Merge IGoR indel choice distributions across all groups."""
+    input: collect_igor_indels
+    output: os.path.join(out_dir_igor_split, "output/indels.tsv.gz")
+    log: os.path.join(log_dir_igor_split, "merge_indel_dists.dbg")
+    conda: env_r
+    threads: config["threads"]["min"]
+    script: os.path.join(script_dir, "merge_dbs.R")
+
+def collect_igor_entropies(wildcards):
+    """Collect entropy DBs from different samples."""
+    checkpoint_output = checkpoints.igor_split_db.get(**wildcards).output[0]
+    return expand(os.path.join(out_dir_igor_run, "output/entropies.tsv"), \
+        value = glob_wildcards(os.path.join(checkpoint_output, "{dataset}_{field,[^-]+}-{value}.tab")).value,
+        dataset = wildcards.dataset, field = wildcards.field)
+
+rule merge_entropy_dists:
+    """Merge IGoR entropy choice distributions across all groups."""
+    input: collect_igor_entropies
+    output: os.path.join(out_dir_igor_split, "output/entropies.tsv.gz")
+    log: os.path.join(log_dir_igor_split, "merge_entropy_dists.dbg")
+    conda: env_r
+    threads: config["threads"]["min"]
+    script: os.path.join(script_dir, "merge_dbs.R")
