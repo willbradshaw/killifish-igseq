@@ -1,0 +1,70 @@
+##############################################################################
+## SNAKEFILE
+## PIPELINE: Immunoglobulin sequencing analysis
+## SUB-PIPELINE: Pre-processing
+## FILE: igblast
+## VERSION: 0.5
+## AUTHOR: Will Bradshaw
+## Date: 2018-08-14
+##############################################################################
+## Assign V/D/J identities to pre-processed repertoire sequences
+##############################################################################
+
+#-----------------------------------------------------------------------------
+# Specify input and output directories
+#-----------------------------------------------------------------------------
+
+out_dir_igblast = os.path.join(out_dir_preprocess, "igblast")
+log_dir_igblast = os.path.join(log_dir_preprocess, "igblast")
+
+#-----------------------------------------------------------------------------
+# Configure input files for IgBLAST alignment
+#-----------------------------------------------------------------------------
+
+rule configure_aux_file:
+    """Prepare J-auxiliary file for IgBLAST alignment."""
+    input: config["auxiliary_file"]
+    output: os.path.join(out_dir_setup, "vdj/j.aux"),
+    log: os.path.join(log_dir_igblast, "configure_aux_file.dbg")
+    shell: "cp {input} {output} &> {log}"
+
+rule igblast_make_db:
+    """Make BLAST databases for IgBLAST alignment"""
+    input: os.path.join(out_dir_setup, "vdj/{segment}_no_imgt.fasta")
+    output: os.path.join(out_dir_setup, "igblast_db/{segment}.nin")
+    log: os.path.join(log_dir_igblast, "{segment}_make_blast_db.dbg")
+    conda: env_main_preprocess
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath(os.path.splitext(output[0])[0])
+    shell:
+        "makeblastdb -parse_seqids -dbtype nucl -in {input} "
+        "-out {params.prefix} &> {log}"
+
+#-----------------------------------------------------------------------------
+# Align to VDJ databases with IgBLAST 
+#-----------------------------------------------------------------------------
+
+rule igblast_align:
+    """Align processed sequences to VDJ databases with IgBLAST"""
+    input:
+        seq = os.path.join(out_dir_poutput, "R12_merged_atleast-2.fasta"),
+        v = os.path.join(out_dir_setup, "igblast_db/v.nin"),
+        d = os.path.join(out_dir_setup, "igblast_db/d.nin"),
+        j = os.path.join(out_dir_setup, "igblast_db/j.nin"),
+        aux = os.path.join(out_dir_setup, "vdj/j.aux"),
+    output: os.path.join(out_dir_igblast, "igblast_merged.fmt7")
+    log: os.path.join(log_dir_igblast, "igblast_align.dbg")
+    conda: env_main_preprocess
+    params:
+        v = lambda wildcards, input: os.path.splitext(input.v)[0],
+        d = lambda wildcards, input: os.path.splitext(input.d)[0],
+        j = lambda wildcards, input: os.path.splitext(input.j)[0],
+    threads: min(8, config["threads"]["med"]) # IgBLAST can't handle >8
+    shell:
+        "export IGDATA=${{CONDA_PREFIX}}/share/igblast; echo $IGDATA &> {log};"
+        "igblastn -ig_seqtype Ig -domain_system imgt -num_threads {threads} "
+        "-query {input.seq} -out {output} -germline_db_V {params.v} "
+        "-germline_db_J {params.j} -germline_db_D {params.d} "
+        "-auxiliary_data {input.aux} -outfmt '7 std qseq sseq btop' "
+        " &>> {log}"

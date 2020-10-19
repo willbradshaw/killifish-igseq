@@ -1,0 +1,86 @@
+##############################################################################
+## SNAKEFILE
+## PIPELINE: Immunoglobulin sequencing analysis
+## SUB-PIPELINE: Pre-processing
+## FILE: setup
+## VERSION: 1.0
+## AUTHOR: Will Bradshaw
+## Date: 2018-08-08
+##############################################################################
+## File import and basic processing for Ig-Seq pre-processing pipeline
+##############################################################################
+
+out_dir_setup = os.path.join(out_dir_preprocess, "setup")
+log_dir_setup = os.path.join(log_dir_preprocess, "setup")
+
+#-----------------------------------------------------------------------------
+# Configure infileserence databases
+#-----------------------------------------------------------------------------
+
+rule configure_segments:
+    """Prepare germline VDJ-segment databases."""
+    input: lambda wildcards: config["germline_segments"][wildcards.segment]
+    output: os.path.join(out_dir_setup, "vdj/{segment}.fasta")
+    log: os.path.join(log_dir_setup, "ref/configure_{segment}.dbg")
+    shell: "seqtk seq -a {input} > {output} 2> {log}" # Seqtk to join lines
+
+rule configure_segments_deimgt:
+    """Remove special IMGT-formatting from segments for IgBLAST."""
+    input: os.path.join(out_dir_setup, "vdj/{segment}.fasta")
+    output: os.path.join(out_dir_setup, "vdj/{segment}_no_imgt.fasta")
+    conda: env_main_preprocess
+    log: os.path.join(log_dir_setup, "ref/deimgt_{segment}.dbg")
+    shell: "edit_imgt_file.pl {input} > {output} 2> {log}"
+
+rule configure_primers:
+    """Prepare primer files for read alignment."""
+    input: lambda wildcards: config["primers"][wildcards.primer]
+    output: os.path.join(out_dir_setup, "oligos/primers_{primer}.fasta")
+    log: os.path.join(log_dir_setup, "ref/configure_primers_{primer}.dbg")
+    shell: "cp {input} {output} &> {log}"
+
+rule configure_tsa:
+    """Prepare TSA sequence file for read alignment."""
+    input: config["tsa"]
+    output: os.path.join(out_dir_setup, "oligos/tsa.fasta")
+    log: os.path.join(log_dir_setup, "ref/configure_tsa.dbg")
+    shell: "cp {input} {output} &> {log}"
+
+#-----------------------------------------------------------------------------
+# Configure sample reads
+#-----------------------------------------------------------------------------
+
+rule configure_reads_5prime:
+    """Prepare 5' reads for processing, decompressing if necessary."""
+    # TODO: Add handling for other (non-gzip) compression?
+    input:
+        lambda wildcards: os.path.join(
+            config["samples"][wildcards.sample]["reads"]["dir"],
+            config["samples"][wildcards.sample]["reads"]["5prime"])
+    output: os.path.join(out_dir_setup, "reads/{sample}/reads_1.fastq") # 1 = 5prime
+    log: os.path.join(log_dir_setup, "ref/{sample}_configure_reads_5prime.dbg")
+    shell:
+        "if [[ $(file {input} | grep 'gzip compressed data' | wc -l) -gt 0 ]];"
+        "then zcat {input} > {output} 2> {log};"
+        "else cp {input} {output} &> {log}; fi"
+
+rule configure_reads_3prime:
+    """Prepare 3' reads for processing, decompressing if necessary."""
+    # TODO: Add handling for other (non-gzip) compression?
+    input:
+        lambda wildcards: os.path.join(
+            config["samples"][wildcards.sample]["reads"]["dir"],
+            config["samples"][wildcards.sample]["reads"]["3prime"])
+    output: os.path.join(out_dir_setup, "reads/{sample}/reads_2.fastq") # 2 = 3prime
+    log: os.path.join(log_dir_setup, "ref/{sample}_configure_reads_3prime.dbg")
+    shell:
+        "if [[ $(file {input} | grep 'gzip compressed data' | wc -l) -gt 0 ]];"
+        "then zcat {input} > {output} 2> {log};"
+        "else cp {input} {output} &> {log}; fi"
+
+rule count_reads:
+    """Count number of reads in complete dataset."""
+    input: os.path.join(out_dir_setup, "reads/{sample}/reads_1.fastq")
+    output: os.path.join(out_dir_setup, "reads/{sample}/reads_count.txt")
+    log: os.path.join(log_dir_setup, "ref/{sample}_count_reads.dbg")
+    shell: "echo $(( $(cat {input} | wc -l) / 4 )) > {output} 2> {log}"
