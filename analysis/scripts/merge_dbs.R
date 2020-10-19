@@ -47,7 +47,10 @@ if (length(input_paths) == 0){
 # If only one non-empty file, just copy that
 } else if (length(input_paths) == 1){
     cat("Only one non-empty file; copying to output...")
-    file.copy(input_paths[[1]], output_path, overwrite = TRUE)
+    col <- cols(.default = col_character())
+    db <- suppressMessages(read_tsv(input_paths[[1]], col_types = col))
+    db <- mutate_at(db, vars(one_of("DIST_NEAREST")),as.numeric)
+    write_tsv(db, output_path)
     cat("done.\n")
 
 # Otherwise, read all files, join them and output
