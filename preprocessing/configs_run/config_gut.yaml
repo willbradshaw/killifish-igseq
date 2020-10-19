@@ -1,0 +1,631 @@
+##############################################################################
+## CONFIG FILE
+## PIPELINE: Immunoglobulin sequencing analysis
+## SUB-PIPELINE: Pre-processing
+## FILE: config_preprocess.yaml
+## VERSION: 0.5
+## AUTHOR: Will Bradshaw
+## Date: 2018-08-08
+##############################################################################
+## Example config file for Ig-Seq pre-processing pipeline
+##############################################################################
+
+##############################################################################
+## THREADING
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# Number of threads to use for large, medium, and small multithreaded jobs; 
+#       if number passed to job is larger than number passed to whole
+#       workflow, latter will be used instead.
+# ----------------------------------------------------------------------------
+
+threads:
+    max: 36 # Max threads for very large jobs
+    mor: 18 # Max threads for large jobs
+    med: 9 # Threads for medium jobs
+    min: 4 # Min threads for small (but still multithreaded) jobs
+
+##############################################################################
+## PATH TO WORKFLOW BASE SNAKEFILE
+##############################################################################
+
+base_path_preprocess: "/beegfs/group_dv/home/WBradshaw/workflows_source/igseq/killifish-igseq/preprocessing/source/snakefiles/base"
+
+##############################################################################
+## SAMPLE INFO
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# UNIVERSAL SAMPLE INFO
+# ----------------------------------------------------------------------------
+# Key/value classification pairs applying across all samples.
+# You can add any extra keys and arbitrary values you want here.
+# ----------------------------------------------------------------------------
+
+info_all:
+    SEX: M
+    STRAIN: GRZ-Bell
+
+# ----------------------------------------------------------------------------
+# RAW READS FILES (`reads` key)
+# ----------------------------------------------------------------------------
+# Specify input paths for paired IgSeq reads files
+# dir = parent directory for reads files
+# 5prime = reads at 5' end of molecule, containing TSA, UMI and V-segment
+# 3prime = reads at 3' end of molecule, containing CM1 primer
+# ----------------------------------------------------------------------------
+# SAMPLE CLASSIFICATION INFO (`info` key)
+# ----------------------------------------------------------------------------
+# Key/value pairs specifying how to classify this sample.
+# You can add any extra keys and arbitrary values you want here, EXCEPT for
+#     REPLICATE and INDIVIDUAL, which are reserved.
+# Used for sample grouping during downstream analysis.
+# ----------------------------------------------------------------------------
+
+# NB: No underscores in sample names!
+samples:
+    18165FL-02-01-01-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-01
+            5prime: 18165FL-02-01-01_S1_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-01_S1_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 402
+            AGE_WEEKS: 16
+            CONDITION: WT
+            GROUP: WT_16
+            LP: 1
+    18165FL-02-01-02-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-02
+            5prime: 18165FL-02-01-02_S2_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-02_S2_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1026
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 1
+    18165FL-02-01-03-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-03
+            5prime: 18165FL-02-01-03_S3_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-03_S3_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 940
+            CONDITION: WT
+            GROUP: WT_16
+            LP: 1
+            AGE_WEEKS: 16
+    18165FL-02-01-04-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-04
+            5prime: 18165FL-02-01-04_S4_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-04_S4_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1009
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 1
+    18165FL-02-01-05-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-05
+            5prime: 18165FL-02-01-05_S5_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-05_S5_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1015
+            AGE_WEEKS: 16
+            CONDITION: SMT
+            GROUP: SMT_16
+            LP: 1
+    18165FL-02-01-06-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-06
+            5prime: 18165FL-02-01-06_S6_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-06_S6_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1412
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 1
+    18165FL-02-01-08-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-08
+            5prime: 18165FL-02-01-08_S8_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-08_S8_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1403
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 1
+    18165FL-02-01-13-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-13
+            5prime: 18165FL-02-01-13_S13_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-13_S13_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1298
+            AGE_WEEKS: 16
+            CONDITION: SMT
+            GROUP: SMT_16
+            LP: 1
+    18165FL-02-01-14-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-14
+            5prime: 18165FL-02-01-14_S14_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-14_S14_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 938
+            AGE_WEEKS: 16
+            CONDITION: WT
+            GROUP: WT_16
+            LP: 1
+    18165FL-02-01-15-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-15
+            5prime: 18165FL-02-01-15_S15_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-15_S15_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1305
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 1
+    18165FL-02-01-20-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-20
+            5prime: 18165FL-02-01-20_S20_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-20_S20_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1301
+            AGE_WEEKS: 16
+            CONDITION: SMT
+            GROUP: SMT_16
+            LP: 1
+    18165FL-02-01-28-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-28
+            5prime: 18165FL-02-01-28_S28_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-28_S28_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1271
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 1
+    18165FL-02-01-37-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-37
+            5prime: 18165FL-02-01-37_S37_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-37_S37_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1414
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 1
+    18165FL-02-01-50-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-50
+            5prime: 18165FL-02-01-50_S50_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-50_S50_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: dash
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 2
+    18165FL-02-01-51-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-51
+            5prime: 18165FL-02-01-51_S51_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-51_S51_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1409
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 2
+    18165FL-02-01-52-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-52
+            5prime: 18165FL-02-01-52_S52_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-52_S52_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 999
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 2
+    18165FL-02-01-54-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-54
+            5prime: 18165FL-02-01-54_S54_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-54_S54_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1274
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 2
+    18165FL-02-01-55-a:
+        reads:
+            dir: reads/reads_1/18165FL-02-01-55
+            5prime: 18165FL-02-01-55_S55_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-55_S55_L001_R1_001.fastq.gz
+        info:
+            RUN: 1
+            FISH: 1309
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 2
+    18165FL-02-01-01-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-01
+            5prime: 18165FL-02-01-01_S1_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-01_S1_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 402
+            AGE_WEEKS: 16
+            CONDITION: WT
+            GROUP: WT_16
+            LP: 1
+    18165FL-02-01-02-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-02
+            5prime: 18165FL-02-01-02_S2_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-02_S2_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1026
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 1
+    18165FL-02-01-03-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-03
+            5prime: 18165FL-02-01-03_S3_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-03_S3_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 940
+            CONDITION: WT
+            GROUP: WT_16
+            LP: 1
+            AGE_WEEKS: 16
+    18165FL-02-01-04-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-04
+            5prime: 18165FL-02-01-04_S4_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-04_S4_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1009
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 1
+    18165FL-02-01-05-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-05
+            5prime: 18165FL-02-01-05_S5_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-05_S5_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1015
+            AGE_WEEKS: 16
+            CONDITION: SMT
+            GROUP: SMT_16
+            LP: 1
+    18165FL-02-01-06-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-06
+            5prime: 18165FL-02-01-06_S6_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-06_S6_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1412
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 1
+    18165FL-02-01-08-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-08
+            5prime: 18165FL-02-01-08_S8_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-08_S8_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1403
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 1
+    18165FL-02-01-13-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-13
+            5prime: 18165FL-02-01-13_S13_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-13_S13_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1298
+            AGE_WEEKS: 16
+            CONDITION: SMT
+            GROUP: SMT_16
+            LP: 1
+    18165FL-02-01-14-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-14
+            5prime: 18165FL-02-01-14_S14_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-14_S14_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 938
+            AGE_WEEKS: 16
+            CONDITION: WT
+            GROUP: WT_16
+            LP: 1
+    18165FL-02-01-15-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-15
+            5prime: 18165FL-02-01-15_S15_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-15_S15_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1305
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 1
+    18165FL-02-01-20-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-20
+            5prime: 18165FL-02-01-20_S20_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-20_S20_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1301
+            AGE_WEEKS: 16
+            CONDITION: SMT
+            GROUP: SMT_16
+            LP: 1
+    18165FL-02-01-28-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-28
+            5prime: 18165FL-02-01-28_S28_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-28_S28_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1271
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 1
+    18165FL-02-01-37-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-37
+            5prime: 18165FL-02-01-37_S37_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-37_S37_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1414
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 1
+    18165FL-02-01-50-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-50
+            5prime: 18165FL-02-01-50_S50_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-50_S50_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: dash
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 2
+    18165FL-02-01-51-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-51
+            5prime: 18165FL-02-01-51_S51_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-51_S51_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1409
+            AGE_WEEKS: 6
+            CONDITION: YI
+            GROUP: YI_6
+            LP: 2
+    18165FL-02-01-52-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-52
+            5prime: 18165FL-02-01-52_S52_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-52_S52_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 999
+            AGE_WEEKS: 16
+            CONDITION: YMT
+            GROUP: YMT_16
+            LP: 2
+    18165FL-02-01-54-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-54
+            5prime: 18165FL-02-01-54_S54_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-54_S54_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1274
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 2
+    18165FL-02-01-55-b:
+        reads:
+            dir: reads/reads_2/18165FL-02-01-55
+            5prime: 18165FL-02-01-55_S55_L001_R2_001.fastq.gz
+            3prime: 18165FL-02-01-55_S55_L001_R1_001.fastq.gz
+        info:
+            RUN: 2
+            FISH: 1309
+            AGE_WEEKS: 16
+            CONDITION: ABX
+            GROUP: ABX_16
+            LP: 2
+
+# Key(s) to split aggregate data on during pRESTO pre-processing
+# (e.g. to collapse sequencing replicates)
+info_key_replicate: "FISH"
+# Key(s) to split aggregate data on to obtain biological individuals
+# (e.g. for clonotyping)
+info_key_individual: "FISH"
+# Key(s) to aggregate on for read counting (generally SAMPLE, REPLICATE, or
+# INDIVIDUAL)
+count_on: "REPLICATE"
+
+##############################################################################
+## REFERENCE FILES
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# GERMLINE DATABASES
+# ----------------------------------------------------------------------------
+# Specify input paths for IGH V, D, J and C-sequences from reference database
+# ----------------------------------------------------------------------------
+
+germline_segments:
+    v: source/source/input_files/vdj/vh_imgt.fasta
+    d: source/source/input_files/vdj/dh.fasta
+    j: source/source/input_files/vdj/jh.fasta
+
+# ----------------------------------------------------------------------------
+# AUXILIARY FILE
+# ----------------------------------------------------------------------------
+# Specify input path for J-auxiliary file (for IgBLAST alignment)
+# ----------------------------------------------------------------------------
+
+auxiliary_file: source/source/input_files/vdj/jh_aux.txt
+
+# ----------------------------------------------------------------------------
+# PRIMERS AND OLIGOS
+# ----------------------------------------------------------------------------
+# Specify input path for TSA sequence file and 5'/3' primer sequences
+# ----------------------------------------------------------------------------
+
+primers:
+    c: source/source/input_files/oligos/cprimers.fasta
+    tsa: source/source/input_files/oligos/m1s.fasta
+
+tsa: source/source/input_files/oligos/tsa.fasta
+
+##############################################################################
+## PRESTO CONFIGURATION
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# PRESTO PRE-PROCESSING PARAMETERS
+# ----------------------------------------------------------------------------
+# filter_qual: Quality threshold for read filtering
+# tsa_barcode_length: Distance from end of fixed TSA primer sequence to end
+#       of UMI (counting from 0)
+# tsa_max_error: Maximum error tolerance for UMI extraction during primer
+#       masking (high = tolerant; high by default)
+# pairseq_coord: Co-ordinate system for barcode unification; use "illumina"
+#       for raw sequencing data, "SRA" for SRA-downloaded data
+# build_consensus_max_error: Maximum error tolerance for MIG clustering
+#       (high = tolerant; low by default)
+# build_consensus_max_gap: Maximum gap *rate* for MIG clustering
+#       (high = tolerant)
+# collapse_seq_max_gap: Maximum gap *number* for sequence collapse
+#       (high = tolerant)
+# ----------------------------------------------------------------------------
+# TODO: Add params for primer start co-ordinates?
+
+presto_params:
+    filter_qual: 20 
+    tsa_barcode_length: 16
+    tsa_max_error: 0.5
+    cluster_umis: True
+    cluster_barcodes_pident: 0.9 # TODO: Test this
+    cluster_sets_pident: 0.75 # TODO: Test this
+    pairseq_coord: "illumina"
+    build_consensus_max_error: 0.1 
+    build_consensus_max_gap: 0.5 
+    collapse_seq_max_gap: 20 
+
+presto_log_fields:
+    filter_seq: ID QUALITY #SEQ
+    mask_primers: ID PRIMER ERROR #SEQORIENT PRORIENT PRSTART INSEQ ALIGN OUTSEQ
+    cluster_sets: ID BARCODE SEQCOUNT CLUSTERS
+    mask_barcodes: ID PRIMER BARCODE ERROR #SEQORIENT PRORIENT PRSTART INSEQ ALIGN OUTSEQ
+    build_consensus: BARCODE SEQCOUNT CONSCOUNT ERROR # ID PRIMER PRCOUNT PRCONS PRFREQ CONSENSUS QUALITY
+    assemble_pairs: ID LENGTH OVERLAP ERROR PVALUE # FIELDS1 FIELDS2 SEQ1 SEQ2 ASSEMBLY QUALITY
+    split_seq: ID CONSCOUNT DUPCOUNT
+# TODO: Specify IgDiscover parameters, generate IgDiscover config file therefrom
+
+# TODO: Specify IgDiscover parameters, generate IgDiscover config file therefrom
+
+##############################################################################
+## CHANGE-O CONFIGURATION
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# SHAZAM NEAREST-NEIGHBOUR PARAMETERS
+# ----------------------------------------------------------------------------
+# Parameters to pass to DistToNearest for computing nearest-neighbours
+#
+# model: Distance model to use ("ham" = nucleotide Hamming distance,
+#       "aa" = amino-acid Hamming distance)
+# symmetry: Method for combining A -> B and B -> A distances
+#       ("min" = minimum, "avg" = average)
+# normalize: Normalisation method ("len" = by sequence length, 
+#       "none" = no normalisation)
+# ----------------------------------------------------------------------------
+
+dist_to_nearest:
+    model: "ham"
+    symmetry: "min"
+    normalize: "len"
+
+# ----------------------------------------------------------------------------
+# SHAZAM DISTANCE THRESHOLD PARAMETERS
+# ----------------------------------------------------------------------------
+# Parameters to pass to findThreshold for threshold inference for clonotyping
+#
+# method: Statistical method to use ("gmm": maximum-likelihood-model-based,
+#       "density": kernel-density-based)
+# model: Statistical distributions to fit to upper and lower curves
+#       ("norm-norm", "gamma-gamma", "gamma-norm" or "norm-gamma")
+# cutoff: Method for identifying threshold from fitted curves
+#       ("opt" = optimum sensitivity/specificity threshold,
+#       "intersect" = intersection of the two curves)
+# NB: model and cutoff only affect the result in gmm mode, not density mode
+# ----------------------------------------------------------------------------
+
+infer_cluster_threshold:
+    cutoff: "opt"

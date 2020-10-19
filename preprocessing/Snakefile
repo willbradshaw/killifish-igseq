@@ -1,0 +1,33 @@
+##############################################################################
+## SNAKEFILE
+## PIPELINE: Immunoglobulin sequencing analysis
+## SUB-PIPELINE: Pre-processing
+## AUTHOR: Will Bradshaw
+##############################################################################
+## Example run snakefile for Ig-Seq pipeline
+##############################################################################
+
+out_dir = "outfiles"
+log_dir = "logs"
+
+configfile: "config_preprocess.yaml"
+include: config["base_path_preprocess"]
+
+#------------------------------------------------------------------------------
+# Default rule
+#------------------------------------------------------------------------------
+
+rule all:
+    input:
+        # pRESTO output files
+        "outfiles/preprocess/presto/output/R12_merged_atleast-2.fasta",
+        "outfiles/preprocess/presto/count/report.tsv",
+        # IgBLAST output file
+        "outfiles/preprocess/igblast/igblast_merged.fmt7",
+        # Change-O output files
+        "outfiles/preprocess/changeo/output/seqs-all.tab",
+        "outfiles/preprocess/changeo/output/seqs-functional.tab",
+        "outfiles/preprocess/changeo/output/seqs-nonfunctional.tab",
+        "outfiles/preprocess/changeo/count/report.tsv",
+        # Collated read survival
+        "outfiles/preprocess/changeo/count/reports-combined.tsv",

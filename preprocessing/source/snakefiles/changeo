@@ -1,0 +1,428 @@
+##############################################################################
+## SNAKEFILE
+## PIPELINE: Immunoglobulin sequencing analysis
+## SUB-PIPELINE: Pre-processing
+## FILE: changeo
+## VERSION: 0.5
+## AUTHOR: Will Bradshaw
+## Date: 2018-08-14
+##############################################################################
+## Convert pre-processed repertoire seqs into a Change-O database and
+## perform clonotype grouping and genotype inference
+##############################################################################
+
+#-----------------------------------------------------------------------------
+# Specify input and output directories
+#-----------------------------------------------------------------------------
+
+out_dir_changeo = os.path.join(out_dir_preprocess, "changeo")
+log_dir_changeo = os.path.join(log_dir_preprocess, "changeo")
+
+#-----------------------------------------------------------------------------
+# Create, annotate and merge sequence databases
+#-----------------------------------------------------------------------------
+
+out_dir_cmake = os.path.join(out_dir_changeo, "make")
+log_dir_cmake = os.path.join(log_dir_changeo, "make")
+out_dir_ccount = os.path.join(out_dir_changeo, "count")
+log_dir_ccount = os.path.join(log_dir_changeo, "count")
+
+rule changeo_make_db:
+    """Make sequence database from IgBLAST output with Change-O"""
+    input:
+        igblast = os.path.join(out_dir_igblast, "igblast_merged.fmt7"),
+        seq = os.path.join(out_dir_poutput, "R12_merged_atleast-2.fasta"),
+        v = os.path.join(out_dir_setup, "vdj/v.fasta"),
+        d = os.path.join(out_dir_setup, "vdj/d.fasta"),
+        j = os.path.join(out_dir_setup, "vdj/j.fasta"),
+    output:
+        p = os.path.join(out_dir_cmake, "merged_db-pass.tab"),
+        f = os.path.join(out_dir_cmake, "merged_db-fail.tab"),
+    conda: env_main_preprocess
+    log: os.path.join(log_dir_cmake, "make_changeo_db.dbg")
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath("_".join(output[0].split("_")[:-1])),
+    shell:
+        "MakeDb.py igblast --regions --scores --failed --partial --asis-calls "
+        " --cdr3 -i {input.igblast} -s {input.seq} --outname {params.prefix} "
+        "-r {input.v} {input.d} {input.j} &> {log};"
+
+rule changeo_add_names:
+    """Add sequence IDs to Change-O table where missing."""
+    input: os.path.join(out_dir_cmake, "merged_db-{outcome}.tab")
+    output: os.path.join(out_dir_cmake, "merged_db-{outcome}_named.tab")
+    conda: env_r_preprocess
+    log: os.path.join(log_dir_cmake, "changeo_add_names_db-{outcome}.dbg")
+    params:
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "name_changeo_db.R")
+
+rule changeo_count_make:
+    """Count reads and sequences after constructing Change-O DB."""
+    input: os.path.join(out_dir_cmake, "merged_db-pass.tab")
+    output: os.path.join(out_dir_ccount, "count-make.tsv")
+    log: os.path.join(log_dir_ccount, "count-cmake.dbg")
+    params:
+        stage = "changeo_makedb",
+        cluster_barcodes = config["presto_params"]["cluster_barcodes_pident"],
+        cluster_sets = config["presto_params"]["cluster_sets_pident"],
+        group_field = config["count_on"],
+        aux = aux_dir_preprocess,
+    conda: env_r_preprocess
+    script: os.path.join(script_dir_preprocess, "count_changeo_db.R")
+
+#-----------------------------------------------------------------------------
+# Filter out malformed sequences by V_SCORE
+#-----------------------------------------------------------------------------
+
+rule changeo_filter_vscores:
+    """Filter out malformed sequences by V_SCORE."""
+    input: os.path.join(out_dir_cmake, "merged_db-{outcome}_named.tab")
+    output: os.path.join(out_dir_cmake, "merged_db-{outcome}_filtered.tab")
+    log: os.path.join(log_dir_cmake, "changeo_filter-vscores_db-{outcome}.dbg")
+    conda: env_r_preprocess
+    params:
+        min_vscore = 100, # TODO: Make configurable
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "changeo_filter_vscores.R")
+
+rule changeo_count_filtered:
+    """Count reads and sequences after filtering Change-O DB."""
+    input: os.path.join(out_dir_cmake, "merged_db-pass_filtered.tab")
+    output: os.path.join(out_dir_ccount, "count-filtered.tsv")
+    log: os.path.join(log_dir_ccount, "count-cfilter.dbg")
+    params:
+        stage = "changeo_filter",
+        cluster_barcodes = config["presto_params"]["cluster_barcodes_pident"],
+        cluster_sets = config["presto_params"]["cluster_sets_pident"],
+        group_field = config["count_on"],
+        aux = aux_dir_preprocess,
+    conda: env_r_preprocess
+    script: os.path.join(script_dir_preprocess, "count_changeo_db.R")
+
+#-----------------------------------------------------------------------------
+# Assign clonotype identities by individual
+#-----------------------------------------------------------------------------
+out_dir_cclone = os.path.join(out_dir_changeo, "clone")
+log_dir_cclone = os.path.join(log_dir_changeo, "clone")
+
+rule dist_to_nearest:
+    """Measure distance from each sequence to its nearest neighbour."""
+    input: os.path.join(out_dir_cmake, "merged_db-pass_filtered.tab")
+    output: os.path.join(out_dir_cclone, "merged_db-pass_neighbour-all.tab")
+    params:
+        model = config["dist_to_nearest"]["model"],
+        symmetry = config["dist_to_nearest"]["symmetry"],
+        normalize = config["dist_to_nearest"]["normalize"],
+        aux = aux_dir_preprocess,
+        group = "INDIVIDUAL",
+    threads: config["threads"]["max"]
+    conda: env_r_preprocess
+    log: os.path.join(log_dir_cclone, "dist_to_nearest.dbg")
+    script: os.path.join(script_dir_preprocess, "dist_to_nearest.R")
+
+rule infer_cluster_threshold_single:
+    """Infer nearest-neighbour distance threshold under a single model."""
+    input: os.path.join(out_dir_cclone, "merged_db-pass_neighbour-all.tab"),
+    output: os.path.join(out_dir_cclone, "merged_db-pass_threshold-{model}.rds")
+    conda: env_r_preprocess
+    log: os.path.join(log_dir_cclone, "infer_cluster_threshold_{model}.dbg")
+    threads: config["threads"]["med"]
+    params:
+        dist = config["dist_to_nearest"]["model"],
+        cutoff = config["infer_cluster_threshold"]["cutoff"],
+        aux = aux_dir_preprocess,
+    # TODO: Set wildcard constraints for model
+    wildcard_constraints:
+        model = "norm-norm|norm-gamma|gamma-norm|gamma-gamma",
+    script: os.path.join(script_dir_preprocess, "infer_cluster_threshold_single.R")
+
+rule infer_cluster_threshold_best:
+    """Infer best nearest-neighbour distance-threshold model."""
+    input: expand(os.path.join(out_dir_cclone, \
+        "merged_db-pass_threshold-{model}.rds"), \
+        model = ["gamma-gamma", "gamma-norm", "norm-gamma", "norm-norm"])
+    output:
+        threshold = os.path.join(out_dir_cclone, \
+            "merged_db-pass_clone-threshold.txt"),
+        plot = os.path.join(out_dir_cclone, \
+            "merged_db-pass_clone-threshold.png"),
+    conda: env_r_preprocess
+    log: os.path.join(log_dir_cclone, "infer_cluster_threshold_best.dbg")
+    threads: config["threads"]["med"]
+    params:
+        dist = config["dist_to_nearest"]["model"],
+        cutoff = config["infer_cluster_threshold"]["cutoff"],
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "infer_cluster_threshold_best.R")
+
+rule changeo_define_clones:
+    """Assign clonotypes with thresholding rule for each individual."""
+    input:
+        tab = os.path.join(out_dir_cclone, "merged_db-pass_neighbour-all.tab"),
+        threshold = os.path.join(out_dir_cclone, "merged_db-pass_clone-threshold.txt"),
+    output:
+        p = os.path.join(out_dir_cclone, "merged_db-pass_clone-pass.tab"),
+        f = os.path.join(out_dir_cclone, "merged_db-pass_clone-fail.tab"),
+        log = os.path.join(out_dir_cclone, "merged_db-pass_clone-pass.log"),
+    conda: env_main_preprocess
+    log: os.path.join(log_dir_cclone, "define-clones.dbg")
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath("_".join(output[0].split("_")[:-1])),
+        link = "single",
+        maxmiss = 1,
+    threads: config["threads"]["med"]
+    shell:
+        "if [[ $(cat {input.threshold}) == 'failed' ]]; then "
+        "echo -e 'Thresholding failed: clonotying not possible.\n' &> {log};"
+        "ln -sr {input.tab} {output.f} &>> {log}; else "
+        "DefineClones.py --act set --model ham --sym min --norm len --failed "
+        "--nproc {threads} --outname {params.prefix} --log {output.log} "
+        "-d {input.tab} --dist $(cat {input.threshold}) --gf INDIVIDUAL "
+        "--link {params.link} --maxmiss {params.maxmiss} &> {log}; fi;"
+        "if [[ ! -e {output.f} ]]; then touch {output.f} &>> {log}; fi;"
+        "if [[ ! -e {output.p} ]]; then touch {output.p} &>> {log}; fi"
+
+rule changeo_disambiguate_clones:
+    """Disambiguate clone labels from different sources."""
+    input: os.path.join(out_dir_cclone, "merged_db-pass_clone-pass.tab"),
+    output: os.path.join(out_dir_cclone, "merged_db-pass_clone-pass_disambiguated.tab"),
+    conda: env_r_preprocess
+    log: os.path.join(log_dir_cclone, "disambiguate_clones.dbg")
+    threads: config["threads"]["min"]
+    params:
+        clone_field = "CLONE",
+        source_field = "INDIVIDUAL",
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "changeo_disambiguate_clones.R")
+
+rule changeo_count_clonotyped:
+    """Count reads and sequences after assigning individual clonotypes."""
+    input: os.path.join(out_dir_cclone, "merged_db-pass_clone-pass_disambiguated.tab"),
+    output: os.path.join(out_dir_ccount, "count-clone.tsv")
+    log: os.path.join(log_dir_ccount, "count-clone.dbg")
+    threads: config["threads"]["min"]
+    params:
+        stage = "changeo_clonotyped",
+        cluster_barcodes = config["presto_params"]["cluster_barcodes_pident"],
+        cluster_sets = config["presto_params"]["cluster_sets_pident"],
+        aux = aux_dir_preprocess,
+        group_field = config["count_on"],
+    conda: env_r_preprocess
+    script: os.path.join(script_dir_preprocess, "count_changeo_db.R")
+
+rule changeo_merge_clone_output:
+    """Merge processed output files from individual-based clonotyping."""
+    input:
+        os.path.join(out_dir_cclone, "merged_db-pass_clone-pass_disambiguated.tab"),
+        os.path.join(out_dir_cclone, "merged_db-pass_clone-fail.tab"),
+    output: os.path.join(out_dir_cclone, "merged_db-pass_clone-all.tab")
+    log: os.path.join(log_dir_cclone, "merge_clone_output.dbg")
+    conda: env_r_preprocess
+    params:
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "merge_dbs.R")
+
+#-----------------------------------------------------------------------------
+# Infer genotype sequences from individual-based clones
+#-----------------------------------------------------------------------------
+
+out_dir_cgerm = os.path.join(out_dir_changeo, "germ")
+log_dir_cgerm = os.path.join(log_dir_changeo, "germ")
+
+rule changeo_create_germlines:
+    """Infer clonotype germline sequences from individual-based clones."""
+    input:
+        seq = os.path.join(out_dir_cclone, "merged_db-pass_clone-all.tab"),
+        v = os.path.join(out_dir_setup, "vdj/v.fasta"),
+        d = os.path.join(out_dir_setup, "vdj/d.fasta"),
+        j = os.path.join(out_dir_setup, "vdj/j.fasta"),
+    output:
+        p = os.path.join(out_dir_cgerm, "merged_db-pass_germ-pass.tab"),
+        f = os.path.join(out_dir_cgerm, "merged_db-pass_germ-fail.tab"),
+        log = os.path.join(out_dir_cgerm, "merged_db-pass_germ-log.log"),
+    conda: env_main_preprocess
+    log: os.path.join(log_dir_cgerm, "create_germlines.dbg")
+    threads: config["threads"]["max"]
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath("_".join(output[0].split("_")[:-1])),
+    shell:
+        "if [[ $(cat {input.seq} | wc -l) -eq 0 ]]; then "
+        "echo -e 'Clonotyping failed: genotying not possible.\n' &> {log};"
+        "touch {output.f} &>> {log}; else "
+        "CreateGermlines.py -g dmask --cloned -d {input.seq} --log {output.log} "
+        "-r {input.v} {input.d} {input.j} --outname {params.prefix} "
+        "--failed &> {log}; fi;"
+        "if [[ ! -e {output.f} ]]; then touch {output.f} &>> {log}; fi;"
+        "if [[ ! -e {output.p} ]]; then touch {output.p} &>> {log}; fi"
+
+rule changeo_count_germlined:
+    """Count reads and sequences after germline assignment."""
+    input: os.path.join(out_dir_cgerm, "merged_db-pass_germ-pass.tab")
+    output: os.path.join(out_dir_ccount, "count-germ.tsv")
+    log: os.path.join(log_dir_ccount, "count-germ.dbg")
+    params:
+        stage = "changeo_germlined",
+        cluster_barcodes = config["presto_params"]["cluster_barcodes_pident"],
+        cluster_sets = config["presto_params"]["cluster_sets_pident"],
+        group_field = config["count_on"],
+        aux = aux_dir_preprocess,
+    conda: env_r_preprocess
+    script: os.path.join(script_dir_preprocess, "count_changeo_db.R")
+
+rule changeo_merge_germlined:
+    """Merge output files from germline assignment."""
+    input:
+        os.path.join(out_dir_cgerm, "merged_db-pass_germ-pass.tab"),
+        os.path.join(out_dir_cgerm, "merged_db-pass_germ-fail.tab"),
+    output: os.path.join(out_dir_cgerm, "merged_db-pass_germ-all.tab")
+    log: os.path.join(log_dir_cgerm, "merge_germlined.dbg")
+    conda: env_r_preprocess
+    params:
+        aux = aux_dir_preprocess,
+    threads: config["threads"]["min"]
+    script: os.path.join(script_dir_preprocess, "merge_dbs.R")
+
+rule optimise_calls:
+    """Use germline-inference fields to optimise segment calls."""
+    input: os.path.join(out_dir_cgerm, "merged_db-pass_germ-all.tab")
+    output: os.path.join(out_dir_cgerm, "merged_db-pass_germ-all_optimised.tab")
+    conda: env_r_preprocess
+    log: os.path.join(log_dir_cgerm, "optimise_calls.dbg")
+    params:
+        aux = aux_dir_preprocess,
+    threads: config["threads"]["min"]
+    script: os.path.join(script_dir_preprocess, "changeo_optimise_calls.R")
+
+#-----------------------------------------------------------------------------
+# Count possible segment calls and assign ambiguity
+#-----------------------------------------------------------------------------
+
+rule assign_ambiguity:
+    """Add entries to Change-O DB denoting V/D/J segment ambiguity."""
+    input: os.path.join(out_dir_cgerm, "merged_db-pass_germ-all_optimised.tab")
+    output: os.path.join(out_dir_cgerm, "merged_db-pass_germ-all_ambig-assigned.tab")
+    log: os.path.join(log_dir_cgerm, "assign_ambiguity.tab")
+    conda: env_r_preprocess
+    params:
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "assign_ambiguity.R")
+# TODO: Restore VD_AMBIG and VDJ_AMBIG in analysis pipeline
+
+rule add_combined_calls:
+    """Add combined VD/VDJ calls to Change-O DB."""
+    input: os.path.join(out_dir_cgerm, "merged_db-pass_germ-all_ambig-assigned.tab")
+    output: os.path.join(out_dir_cgerm, "merged_db-pass_germ-all_combined-calls.tab")
+    log: os.path.join(log_dir_cgerm, "add_combined_calls.tab")
+    conda: env_r_preprocess
+    params:
+        aux = aux_dir_preprocess
+    script: os.path.join(script_dir_preprocess, "add_combined_calls.R")
+
+#-----------------------------------------------------------------------------
+# Separate functional from nonfunctional sequences
+#-----------------------------------------------------------------------------
+
+out_dir_cfunc = os.path.join(out_dir_changeo, "func")
+log_dir_cfunc = os.path.join(log_dir_changeo, "func")
+
+rule changeo_split_functional:
+    """Identify and separate functional from nonfunctional sequences"""
+    input: os.path.join(out_dir_cgerm, \
+        "merged_db-pass_germ-all_combined-calls.tab")
+    output:
+        p = os.path.join(out_dir_cfunc, "merged_db-pass_FUNCTIONAL-T.tab"),
+        f = os.path.join(out_dir_cfunc, "merged_db-pass_FUNCTIONAL-F.tab"),
+    conda: env_main_preprocess
+    log: os.path.join(log_dir_cfunc, "split_functional.dbg")
+    threads: config["threads"]["min"]
+    params:
+        prefix = lambda wildcards, output: \
+            os.path.abspath("_".join(output[0].split("_")[:-1])),
+    shell:
+        "if [[ $(cat {input} | wc -l) -eq 0 ]]; then "
+        "echo -e 'Parsing failed: no database to parse.\n' &> {log};"
+        "touch {output.p} &>> {log}; else "
+        "ParseDb.py split -f FUNCTIONAL --outname {params.prefix} "
+        "-d {input} &> {log}; fi;"
+        "if [[ ! -e {output.p} ]]; then touch {output.p} &>> {log}; fi;"
+        "if [[ ! -e {output.f} ]]; then touch {output.f} &>> {log}; fi"
+
+rule changeo_count_functional:
+    """Count reads and sequences after splitting functional sequences."""
+    input: os.path.join(out_dir_cfunc, "merged_db-pass_FUNCTIONAL-T.tab")
+    output: os.path.join(out_dir_ccount, "count-func.tsv")
+    log: os.path.join(log_dir_ccount, "count-func.dbg")
+    threads: config["threads"]["min"]
+    params:
+        stage = "changeo_split_functional",
+        cluster_barcodes = config["presto_params"]["cluster_barcodes_pident"],
+        cluster_sets = config["presto_params"]["cluster_sets_pident"],
+        aux = aux_dir_preprocess,
+        group_field = config["count_on"],
+    conda: env_r_preprocess
+    script: os.path.join(script_dir_preprocess, "count_changeo_db.R")
+
+#-----------------------------------------------------------------------------
+# Prepare output databases
+#-----------------------------------------------------------------------------
+
+out_dir_cout = os.path.join(out_dir_changeo, "output")
+log_dir_cout = os.path.join(log_dir_changeo, "output")
+
+rule changeo_seqs_all:
+    input: os.path.join(out_dir_cgerm, \
+        "merged_db-pass_germ-all_combined-calls.tab")
+    output:  os.path.join(out_dir_cout, "seqs-all.tab")
+    log: os.path.join(log_dir_cout, "seqs-all.dbg")
+    threads: config["threads"]["min"]
+    shell: "ln -sr {input} {output} &> {log}"
+
+rule changeo_seqs_functional:
+    input: os.path.join(out_dir_cfunc, "merged_db-pass_FUNCTIONAL-T.tab")
+    output:  os.path.join(out_dir_cout, "seqs-functional.tab")
+    log: os.path.join(log_dir_cout, "seqs-functional.dbg")
+    threads: config["threads"]["min"]
+    shell: "ln -sr {input} {output} &> {log}"
+
+rule changeo_seqs_nonfunctional:
+    input: os.path.join(out_dir_cfunc, "merged_db-pass_FUNCTIONAL-F.tab")
+    output:  os.path.join(out_dir_cout, "seqs-nonfunctional.tab")
+    log: os.path.join(log_dir_cout, "seqs-nonfunctional.dbg")
+    threads: config["threads"]["min"]
+    shell: "ln -sr {input} {output} &> {log}"
+
+#-----------------------------------------------------------------------------
+# Collate read-count tables into a final report for each sample
+#-----------------------------------------------------------------------------
+
+rule changeo_count_collate:
+    """Collate count reports from different stages into a single table."""
+    input:
+        os.path.join(out_dir_ccount, "count-make.tsv"),
+        os.path.join(out_dir_ccount, "count-filtered.tsv"),
+        os.path.join(out_dir_ccount, "count-clone.tsv"),
+        os.path.join(out_dir_ccount, "count-germ.tsv"),
+        os.path.join(out_dir_ccount, "count-func.tsv"),
+    output: os.path.join(out_dir_ccount, "report.tsv")
+    log: os.path.join(log_dir_ccount, "collate-counts.dbg")
+    conda: env_r_preprocess
+    params:
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "merge_dbs.R")
+
+
+rule combine_immcantation_reports:
+    """Combine count reports from pRESTO and Change-O."""
+    input:
+        os.path.join(out_dir_pcount, "report.tsv"),
+        os.path.join(out_dir_ccount, "report.tsv"),
+    output: os.path.join(out_dir_ccount, "reports-combined.tsv")
+    log: os.path.join(log_dir_ccount, "combine-reports.dbg")
+    conda: env_r_preprocess
+    params:
+        aux = aux_dir_preprocess,
+    script: os.path.join(script_dir_preprocess, "merge_dbs.R")

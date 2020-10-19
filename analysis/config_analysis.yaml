@@ -1,0 +1,104 @@
+##############################################################################
+## Example config file for Ig-Seq downstream-analysis pipeline
+## Copy to intended workflow directory and update prior to running
+##############################################################################
+
+##############################################################################
+## THREAD ALLOCATION
+##############################################################################
+
+threads:
+    kw: 48 # Threads for KW permutation testing
+    max: 18 # Max threads for large jobs
+    med: 9 # Threads for medium jobs
+    min: 4 # Min threads for small (but still multithreaded) jobs
+
+##############################################################################
+## INPUT PATHS
+##############################################################################
+# Paths to output data from preprocessing pipeline, one per dataset to be
+# analysed, as well as reference files for IGoR analysis
+##############################################################################
+
+data_changeo: # Change-O datasets
+    pilot: "../data_processed/changeo/pilot-seqs-all.tsv.gz"
+    ageing: "../data_processed/changeo/ageing-seqs-all.tsv.gz"
+    gut_age: "../data_processed/changeo/gut-seqs-all.tsv.gz"
+    gut_group: "../data_processed/changeo/gut-seqs-all.tsv.gz"
+
+##############################################################################
+## GROUP FILTERING SETTINGS
+##############################################################################
+# Specifications for filtering out particular groups or individuals from
+# analysis; one entry per dataset, must match data_preprocessed.
+##############################################################################
+
+filter_groups: # Use [] if no filtering
+    pilot: []
+    ageing: []
+    gut_age:
+        INDIVIDUAL: [1274, 1309] # Exclude individuals with very low read survival
+    gut_group:
+        GROUP: ["YI_6"] # Exclude young individuals from treatment comparison
+
+keep_complement:
+    pilot: True
+    ageing: True
+    gut_age: True
+    gut_group: True
+# If True, discard groups in filter_groups and keep the rest. If False,
+# keep groups in filter_groups and discard the rest.
+
+##############################################################################
+## DIVERSITY SPECTRUM COMPUTATION
+##############################################################################
+
+div_parameters: # Parameters for Hill diversity spectra
+    min_q: 0 # Minimum diversity order
+    max_q: 4 # Maximum diversity order
+    step_q: 0.05 # Diversity order step size
+    min_n: 30 # Minimum number of observations per group
+    max_n: None # Maximum number of observations per group
+    nboot: 2000 # Number of bootstrap replicates
+    ci: 0.95 # Confidence interval to compute around central values
+    n_permute: 3000 # Number of permutations to run for KW permutation test
+
+# Segments to include in diversity analysis; some subset of VDJ
+segment_diversity_type: "VJ"
+
+diversity_datasets: # Datasets to include in each diversity analysis
+    clone: ["ageing", "gut_age", "gut_group"] # Clonal diversity
+    segment_all: ["ageing", "gut_age", "gut_group"] # Segment diversity (all clones)
+    segment_5plus: ["ageing", "gut_age"] # Segment diversity (large clones)
+    segment_4minus: ["ageing", "gut_age"] # Segment diversity (large clones)
+
+group_within: # External group variables for diversity-spectrum calculation
+    ageing: "AGE_DAYS"
+    gut_age: "AGE_WEEKS"
+    gut_group: "GROUP"
+
+group_between: # Internal group variables for diversity-spectrum calculation
+    ageing: "INDIVIDUAL"
+    gut_age: "INDIVIDUAL"
+    gut_group: "INDIVIDUAL"
+
+# NB: If you want to group the same dataset in multiple ways for spectrum
+#     calculation, specify multiple datasets with the same source file
+
+##############################################################################
+## IGOR PARAMETERS
+##############################################################################
+
+# Groups to analyse
+# No "-" (hyphen) characters permitted in group fields
+igor_group_field:
+    pilot: "AGE_DAYS"
+    ageing: "AGE_DAYS"
+igor_groups:
+    pilot: [56]
+    ageing: [39, 56, 73, 128]
+
+# Individuals to analyse (sorry, you have to list them all)
+igor_individuals:
+    pilot: ["2-03", "2-04", "2-05", "2-06"]
+    ageing: ["1-01", "1-02", "1-03", "1-04", "1-05", "1-06", "1-07", "1-08", "1-09", "1-10", "2-01", "2-02", "2-03", "2-04", "2-05", "2-06", "2-07", "2-08", "2-09", "2-10", "3-01", "3-02", "3-03", "3-04", "3-05", "3-06", "3-07", "3-08", "3-09", "3-10", "4-01", "4-02"]

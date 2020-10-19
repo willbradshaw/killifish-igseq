@@ -1,0 +1,1983 @@
+##############################################################################
+## Pre-processing config file for ageing dataset
+##############################################################################
+
+##############################################################################
+## THREADING
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# Number of threads to use for large, medium, and small multithreaded jobs; 
+#       if number passed to job is larger than number passed to whole
+#       workflow, latter will be used instead.
+# ----------------------------------------------------------------------------
+
+threads:
+    max: 36 # Max threads for very large jobs
+    mor: 18 # Max threads for large jobs
+    med: 9 # Threads for medium jobs
+    min: 4 # Min threads for small (but still multithreaded) jobs
+
+##############################################################################
+## PATH TO WORKFLOW BASE SNAKEFILE
+##############################################################################
+
+base_path_preprocess: "/beegfs/group_dv/home/WBradshaw/workflows_source/igseq/killifish-igseq/preprocessing/source/snakefiles/base"
+
+##############################################################################
+## SAMPLE INFO
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# UNIVERSAL SAMPLE INFO
+# ----------------------------------------------------------------------------
+# Key/value classification pairs applying across all samples.
+# You can add any extra keys and arbitrary values you want here.
+# ----------------------------------------------------------------------------
+
+info_all:
+    SEX: M
+    STRAIN: GRZ-AD
+
+# ----------------------------------------------------------------------------
+# RAW READS FILES (`reads` key)
+# ----------------------------------------------------------------------------
+# Specify input paths for paired IgSeq reads files
+# dir = parent directory for reads files
+# 5prime = reads at 5' end of molecule, containing TSA, UMI and V-segment
+# 3prime = reads at 3' end of molecule, containing CM1 primer
+# ----------------------------------------------------------------------------
+# SAMPLE CLASSIFICATION INFO (`info` key)
+# ----------------------------------------------------------------------------
+# Key/value pairs specifying how to classify this sample.
+# You can add any extra keys and arbitrary values you want here, EXCEPT for
+#     REPLICATE and INDIVIDUAL, which are reserved.
+# Used for sample grouping during downstream analysis.
+# ----------------------------------------------------------------------------
+
+# NB: No underscores in sample names!
+samples:
+    1-01-a-1:
+        reads:
+            dir: reads/1-01-a-1
+            5prime: 1-01-a_S1_L001_R2_001.fastq.gz
+            3prime: 1-01-a_S1_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-01
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4194_E
+            WEIGHT: 1.24
+            AGE_REP: 39-A
+    1-02-a-1:
+        reads:
+            dir: reads/1-02-a-1
+            5prime: 1-02-a_S2_L001_R2_001.fastq.gz
+            3prime: 1-02-a_S2_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-02
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4107_E
+            WEIGHT: 1.39
+            AGE_REP: 39-A
+    1-03-a-1:
+        reads:
+            dir: reads/1-03-a-1
+            5prime: 1-03-a_S3_L001_R2_001.fastq.gz
+            3prime: 1-03-a_S3_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-03
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4127_E
+            WEIGHT: 1.29
+            AGE_REP: 39-A
+    1-04-a-1:
+        reads:
+            dir: reads/1-04-a-1
+            5prime: 1-04-a_S4_L001_R2_001.fastq.gz
+            3prime: 1-04-a_S4_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-04
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4204_E
+            WEIGHT: 1.35
+            AGE_REP: 39-A
+    1-05-a-1:
+        reads:
+            dir: reads/1-05-a-1
+            5prime: 1-05-a_S5_L001_R2_001.fastq.gz
+            3prime: 1-05-a_S5_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-05
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4189_E
+            WEIGHT: 1.43
+            AGE_REP: 39-A
+    1-06-a-1:
+        reads:
+            dir: reads/1-06-a-1
+            5prime: 1-06-a_S6_L001_R2_001.fastq.gz
+            3prime: 1-06-a_S6_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-06
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4160_E
+            WEIGHT: 0.68
+            AGE_REP: 39-A
+    1-07-a-1:
+        reads:
+            dir: reads/1-07-a-1
+            5prime: 1-07-a_S7_L001_R2_001.fastq.gz
+            3prime: 1-07-a_S7_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-07
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4164_E
+            WEIGHT: 1.57
+            AGE_REP: 39-A
+    1-08-a-1:
+        reads:
+            dir: reads/1-08-a-1
+            5prime: 1-08-a_S8_L001_R2_001.fastq.gz
+            3prime: 1-08-a_S8_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-08
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4171_E
+            WEIGHT: 1.40
+            AGE_REP: 39-A
+    1-09-a-1:
+        reads:
+            dir: reads/1-09-a-1
+            5prime: 1-09-a_S13_L001_R2_001.fastq.gz
+            3prime: 1-09-a_S13_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-09
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4200_E
+            WEIGHT: 1.42
+            AGE_REP: 39-A
+    1-10-a-1:
+        reads:
+            dir: reads/1-10-a-1
+            5prime: 1-10-a_S14_L001_R2_001.fastq.gz
+            3prime: 1-10-a_S14_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-10
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4131_E
+            WEIGHT: 1.27
+            AGE_REP: 39-A
+    2-01-a-1:
+        reads:
+            dir: reads/2-01-a-1
+            5prime: 2-01-a_S15_L001_R2_001.fastq.gz
+            3prime: 2-01-a_S15_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-01
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4159_E
+            WEIGHT: 1.37
+            AGE_REP: 56-A
+    2-02-a-1:
+        reads:
+            dir: reads/2-02-a-1
+            5prime: 2-02-a_S16_L001_R2_001.fastq.gz
+            3prime: 2-02-a_S16_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-02
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4179_E
+            WEIGHT: 1.47
+            AGE_REP: 56-A
+    2-03-a-1:
+        reads:
+            dir: reads/2-03-a-1
+            5prime: 2-03-a_S17_L001_R2_001.fastq.gz
+            3prime: 2-03-a_S17_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-03
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4152_E
+            WEIGHT: 1.33
+            AGE_REP: 56-A
+    2-04-a-1:
+        reads:
+            dir: reads/2-04-a-1
+            5prime: 2-04-a_S18_L001_R2_001.fastq.gz
+            3prime: 2-04-a_S18_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-04
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4132_E
+            WEIGHT: 1.35
+            AGE_REP: 56-A
+    2-05-a-1:
+        reads:
+            dir: reads/2-05-a-1
+            5prime: 2-05-a_S19_L001_R2_001.fastq.gz
+            3prime: 2-05-a_S19_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-05
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4177_E
+            WEIGHT: 1.22
+            AGE_REP: 56-A
+    2-06-a-1:
+        reads:
+            dir: reads/2-06-a-1
+            5prime: 2-06-a_S20_L001_R2_001.fastq.gz
+            3prime: 2-06-a_S20_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-06
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4158_E
+            WEIGHT: 1.51
+            AGE_REP: 56-A
+    2-07-a-1:
+        reads:
+            dir: reads/2-07-a-1
+            5prime: 2-07-a_S25_L001_R2_001.fastq.gz
+            3prime: 2-07-a_S25_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-07
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4182_E
+            WEIGHT: 1.12
+            AGE_REP: 56-A
+    2-08-a-1:
+        reads:
+            dir: reads/2-08-a-1
+            5prime: 2-08-a_S26_L001_R2_001.fastq.gz
+            3prime: 2-08-a_S26_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-08
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4202_E
+            WEIGHT: 1.54
+            AGE_REP: 56-A
+    2-09-a-1:
+        reads:
+            dir: reads/2-09-a-1
+            5prime: 2-09-a_S27_L001_R2_001.fastq.gz
+            3prime: 2-09-a_S27_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-09
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4143_E
+            WEIGHT: 1.28
+            AGE_REP: 56-A
+    2-10-a-1:
+        reads:
+            dir: reads/2-10-a-1
+            5prime: 2-10-a_S28_L001_R2_001.fastq.gz
+            3prime: 2-10-a_S28_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-10
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4201_E
+            WEIGHT: 1.55
+            AGE_REP: 56-A
+    3-01-a-1:
+        reads:
+            dir: reads/3-01-a-1
+            5prime: 3-01-a_S29_L001_R2_001.fastq.gz
+            3prime: 3-01-a_S29_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-01
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4155_E
+            WEIGHT: 2.06
+            AGE_REP: 73-A
+    3-02-a-1:
+        reads:
+            dir: reads/3-02-a-1
+            5prime: 3-02-a_S30_L001_R2_001.fastq.gz
+            3prime: 3-02-a_S30_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-02
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4193_E
+            WEIGHT: 1.92
+            AGE_REP: 73-A
+    3-03-a-1:
+        reads:
+            dir: reads/3-03-a-1
+            5prime: 3-03-a_S31_L001_R2_001.fastq.gz
+            3prime: 3-03-a_S31_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-03
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4170_E
+            WEIGHT: 1.80
+            AGE_REP: 73-A
+    3-04-a-1:
+        reads:
+            dir: reads/3-04-a-1
+            5prime: 3-04-a_S32_L001_R2_001.fastq.gz
+            3prime: 3-04-a_S32_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-04
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4135_E
+            WEIGHT: 1.65
+            AGE_REP: 73-A
+    3-05-a-1:
+        reads:
+            dir: reads/3-05-a-1
+            5prime: 3-05-a_S37_L001_R2_001.fastq.gz
+            3prime: 3-05-a_S37_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-05
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4190_E
+            WEIGHT: 1.87
+            AGE_REP: 73-A
+    3-06-a-1:
+        reads:
+            dir: reads/3-06-a-1
+            5prime: 3-06-a_S38_L001_R2_001.fastq.gz
+            3prime: 3-06-a_S38_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-06
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4099_E
+            WEIGHT: 1.94
+            AGE_REP: 73-A
+    3-07-a-1:
+        reads:
+            dir: reads/3-07-a-1
+            5prime: 3-07-a_S39_L001_R2_001.fastq.gz
+            3prime: 3-07-a_S39_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-07
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4198_E
+            WEIGHT: 1.49
+            AGE_REP: 73-A
+    3-08-a-1:
+        reads:
+            dir: reads/3-08-a-1
+            5prime: 3-08-a_S40_L001_R2_001.fastq.gz
+            3prime: 3-08-a_S40_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-08
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4024_E
+            WEIGHT: 1.73
+            AGE_REP: 73-A
+    3-09-a-1:
+        reads:
+            dir: reads/3-09-a-1
+            5prime: 3-09-a_S41_L001_R2_001.fastq.gz
+            3prime: 3-09-a_S41_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-09
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4044_E
+            WEIGHT: 1.53
+            AGE_REP: 73-A
+    3-10-a-1:
+        reads:
+            dir: reads/3-10-a-1
+            5prime: 3-10-a_S42_L001_R2_001.fastq.gz
+            3prime: 3-10-a_S42_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-10
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4177_E
+            WEIGHT: 1.57
+            AGE_REP: 73-A
+    4-01-a-1:
+        reads:
+            dir: reads/4-01-a-1
+            5prime: 4-01-a_S43_L001_R2_001.fastq.gz
+            3prime: 4-01-a_S43_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-01
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4173_E
+            WEIGHT: 2.20
+            AGE_REP: 128-A
+    4-02-a-1:
+        reads:
+            dir: reads/4-02-a-1
+            5prime: 4-02-a_S44_L001_R2_001.fastq.gz
+            3prime: 4-02-a_S44_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-02
+            REP: A
+            RUN: 1
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4197_E
+            WEIGHT: 2.40
+            AGE_REP: 128-A
+    1-01-b-1:
+        reads:
+            dir: reads/1-01-b-1
+            5prime: 1-01-b_S96_L001_R2_001.fastq.gz
+            3prime: 1-01-b_S96_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-01
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4194_E
+            WEIGHT: 1.24
+            AGE_REP: 39-B
+    1-02-b-1:
+        reads:
+            dir: reads/1-02-b-1
+            5prime: 1-02-b_S95_L001_R2_001.fastq.gz
+            3prime: 1-02-b_S95_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-02
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4107_E
+            WEIGHT: 1.39
+            AGE_REP: 39-B
+    1-03-b-1:
+        reads:
+            dir: reads/1-03-b-1
+            5prime: 1-03-b_S94_L001_R2_001.fastq.gz
+            3prime: 1-03-b_S94_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-03
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4127_E
+            WEIGHT: 1.29
+            AGE_REP: 39-B
+    1-04-b-1:
+        reads:
+            dir: reads/1-04-b-1
+            5prime: 1-04-b_S93_L001_R2_001.fastq.gz
+            3prime: 1-04-b_S93_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-04
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4204_E
+            WEIGHT: 1.35
+            AGE_REP: 39-B
+    1-05-b-1:
+        reads:
+            dir: reads/1-05-b-1
+            5prime: 1-05-b_S92_L001_R2_001.fastq.gz
+            3prime: 1-05-b_S92_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-05
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4189_E
+            WEIGHT: 1.43
+            AGE_REP: 39-B
+    1-06-b-1:
+        reads:
+            dir: reads/1-06-b-1
+            5prime: 1-06-b_S91_L001_R2_001.fastq.gz
+            3prime: 1-06-b_S91_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-06
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4160_E
+            WEIGHT: 0.68
+            AGE_REP: 39-B
+    1-07-b-1:
+        reads:
+            dir: reads/1-07-b-1
+            5prime: 1-07-b_S90_L001_R2_001.fastq.gz
+            3prime: 1-07-b_S90_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-07
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4164_E
+            WEIGHT: 1.57
+            AGE_REP: 39-B
+    1-08-b-1:
+        reads:
+            dir: reads/1-08-b-1
+            5prime: 1-08-b_S89_L001_R2_001.fastq.gz
+            3prime: 1-08-b_S89_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-08
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4171_E
+            WEIGHT: 1.40
+            AGE_REP: 39-B
+    1-09-b-1:
+        reads:
+            dir: reads/1-09-b-1
+            5prime: 1-09-b_S84_L001_R2_001.fastq.gz
+            3prime: 1-09-b_S84_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-09
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4200_E
+            WEIGHT: 1.42
+            AGE_REP: 39-B
+    1-10-b-1:
+        reads:
+            dir: reads/1-10-b-1
+            5prime: 1-10-b_S83_L001_R2_001.fastq.gz
+            3prime: 1-10-b_S83_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-10
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4131_E
+            WEIGHT: 1.27
+            AGE_REP: 39-B
+    2-01-b-1:
+        reads:
+            dir: reads/2-01-b-1
+            5prime: 2-01-b_S82_L001_R2_001.fastq.gz
+            3prime: 2-01-b_S82_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-01
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4159_E
+            WEIGHT: 1.37
+            AGE_REP: 56-B
+    2-02-b-1:
+        reads:
+            dir: reads/2-02-b-1
+            5prime: 2-02-b_S81_L001_R2_001.fastq.gz
+            3prime: 2-02-b_S81_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-02
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4179_E
+            WEIGHT: 1.47
+            AGE_REP: 56-B
+    2-03-b-1:
+        reads:
+            dir: reads/2-03-b-1
+            5prime: 2-03-b_S80_L001_R2_001.fastq.gz
+            3prime: 2-03-b_S80_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-03
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4152_E
+            WEIGHT: 1.33
+            AGE_REP: 56-B
+    2-04-b-1:
+        reads:
+            dir: reads/2-04-b-1
+            5prime: 2-04-b_S79_L001_R2_001.fastq.gz
+            3prime: 2-04-b_S79_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-04
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4132_E
+            WEIGHT: 1.35
+            AGE_REP: 56-B
+    2-05-b-1:
+        reads:
+            dir: reads/2-05-b-1
+            5prime: 2-05-b_S78_L001_R2_001.fastq.gz
+            3prime: 2-05-b_S78_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-05
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4177_E
+            WEIGHT: 1.22
+            AGE_REP: 56-B
+    2-06-b-1:
+        reads:
+            dir: reads/2-06-b-1
+            5prime: 2-06-b_S77_L001_R2_001.fastq.gz
+            3prime: 2-06-b_S77_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-06
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4158_E
+            WEIGHT: 1.51
+            AGE_REP: 56-B
+    2-07-b-1:
+        reads:
+            dir: reads/2-07-b-1
+            5prime: 2-07-b_S72_L001_R2_001.fastq.gz
+            3prime: 2-07-b_S72_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-07
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4182_E
+            WEIGHT: 1.12
+            AGE_REP: 56-B
+    2-08-b-1:
+        reads:
+            dir: reads/2-08-b-1
+            5prime: 2-08-b_S71_L001_R2_001.fastq.gz
+            3prime: 2-08-b_S71_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-08
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4202_E
+            WEIGHT: 1.54
+            AGE_REP: 56-B
+    2-09-b-1:
+        reads:
+            dir: reads/2-09-b-1
+            5prime: 2-09-b_S70_L001_R2_001.fastq.gz
+            3prime: 2-09-b_S70_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-09
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4143_E
+            WEIGHT: 1.28
+            AGE_REP: 56-B
+    2-10-b-1:
+        reads:
+            dir: reads/2-10-b-1
+            5prime: 2-10-b_S69_L001_R2_001.fastq.gz
+            3prime: 2-10-b_S69_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-10
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4201_E
+            WEIGHT: 1.55
+            AGE_REP: 56-B
+    3-01-b-1:
+        reads:
+            dir: reads/3-01-b-1
+            5prime: 3-01-b_S68_L001_R2_001.fastq.gz
+            3prime: 3-01-b_S68_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-01
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4155_E
+            WEIGHT: 2.06
+            AGE_REP: 73-B
+    3-02-b-1:
+        reads:
+            dir: reads/3-02-b-1
+            5prime: 3-02-b_S67_L001_R2_001.fastq.gz
+            3prime: 3-02-b_S67_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-02
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4193_E
+            WEIGHT: 1.92
+            AGE_REP: 73-B
+    3-03-b-1:
+        reads:
+            dir: reads/3-03-b-1
+            5prime: 3-03-b_S66_L001_R2_001.fastq.gz
+            3prime: 3-03-b_S66_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-03
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4170_E
+            WEIGHT: 1.80
+            AGE_REP: 73-B
+    3-04-b-1:
+        reads:
+            dir: reads/3-04-b-1
+            5prime: 3-04-b_S65_L001_R2_001.fastq.gz
+            3prime: 3-04-b_S65_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-04
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4135_E
+            WEIGHT: 1.65
+            AGE_REP: 73-B
+    3-05-b-1:
+        reads:
+            dir: reads/3-05-b-1
+            5prime: 3-05-b_S60_L001_R2_001.fastq.gz
+            3prime: 3-05-b_S60_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-05
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4190_E
+            WEIGHT: 1.87
+            AGE_REP: 73-B
+    3-06-b-1:
+        reads:
+            dir: reads/3-06-b-1
+            5prime: 3-06-b_S59_L001_R2_001.fastq.gz
+            3prime: 3-06-b_S59_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-06
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4099_E
+            WEIGHT: 1.94
+            AGE_REP: 73-B
+    3-07-b-1:
+        reads:
+            dir: reads/3-07-b-1
+            5prime: 3-07-b_S58_L001_R2_001.fastq.gz
+            3prime: 3-07-b_S58_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-07
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4198_E
+            WEIGHT: 1.49
+            AGE_REP: 73-B
+    3-08-b-1:
+        reads:
+            dir: reads/3-08-b-1
+            5prime: 3-08-b_S57_L001_R2_001.fastq.gz
+            3prime: 3-08-b_S57_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-08
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4024_E
+            WEIGHT: 1.73
+            AGE_REP: 73-B
+    3-09-b-1:
+        reads:
+            dir: reads/3-09-b-1
+            5prime: 3-09-b_S56_L001_R2_001.fastq.gz
+            3prime: 3-09-b_S56_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-09
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4044_E
+            WEIGHT: 1.53
+            AGE_REP: 73-B
+    3-10-b-1:
+        reads:
+            dir: reads/3-10-b-1
+            5prime: 3-10-b_S55_L001_R2_001.fastq.gz
+            3prime: 3-10-b_S55_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-10
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4177_E
+            WEIGHT: 1.57
+            AGE_REP: 73-B
+    4-01-b-1:
+        reads:
+            dir: reads/4-01-b-1
+            5prime: 4-01-b_S54_L001_R2_001.fastq.gz
+            3prime: 4-01-b_S54_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-01
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4173_E
+            WEIGHT: 2.20
+            AGE_REP: 128-B
+    4-02-b-1:
+        reads:
+            dir: reads/4-02-b-1
+            5prime: 4-02-b_S53_L001_R2_001.fastq.gz
+            3prime: 4-02-b_S53_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-02
+            REP: B
+            RUN: 1
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4197_E
+            WEIGHT: 2.40
+            AGE_REP: 128-B
+    1-01-a-2:
+        reads:
+            dir: reads/1-01-a-2
+            5prime: 1-01-a_S1_L001_R2_001.fastq.gz
+            3prime: 1-01-a_S1_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-01
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4194_E
+            WEIGHT: 1.24
+            AGE_REP: 39-A
+    1-02-a-2:
+        reads:
+            dir: reads/1-02-a-2
+            5prime: 1-02-a_S2_L001_R2_001.fastq.gz
+            3prime: 1-02-a_S2_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-02
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4107_E
+            WEIGHT: 1.39
+            AGE_REP: 39-A
+    1-03-a-2:
+        reads:
+            dir: reads/1-03-a-2
+            5prime: 1-03-a_S3_L001_R2_001.fastq.gz
+            3prime: 1-03-a_S3_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-03
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4127_E
+            WEIGHT: 1.29
+            AGE_REP: 39-A
+    1-04-a-2:
+        reads:
+            dir: reads/1-04-a-2
+            5prime: 1-04-a_S4_L001_R2_001.fastq.gz
+            3prime: 1-04-a_S4_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-04
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4204_E
+            WEIGHT: 1.35
+            AGE_REP: 39-A
+    1-05-a-2:
+        reads:
+            dir: reads/1-05-a-2
+            5prime: 1-05-a_S5_L001_R2_001.fastq.gz
+            3prime: 1-05-a_S5_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-05
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4189_E
+            WEIGHT: 1.43
+            AGE_REP: 39-A
+    1-06-a-2:
+        reads:
+            dir: reads/1-06-a-2
+            5prime: 1-06-a_S6_L001_R2_001.fastq.gz
+            3prime: 1-06-a_S6_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-06
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4160_E
+            WEIGHT: 0.68
+            AGE_REP: 39-A
+    1-07-a-2:
+        reads:
+            dir: reads/1-07-a-2
+            5prime: 1-07-a_S7_L001_R2_001.fastq.gz
+            3prime: 1-07-a_S7_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-07
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4164_E
+            WEIGHT: 1.57
+            AGE_REP: 39-A
+    1-08-a-2:
+        reads:
+            dir: reads/1-08-a-2
+            5prime: 1-08-a_S8_L001_R2_001.fastq.gz
+            3prime: 1-08-a_S8_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-08
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4171_E
+            WEIGHT: 1.40
+            AGE_REP: 39-A
+    1-09-a-2:
+        reads:
+            dir: reads/1-09-a-2
+            5prime: 1-09-a_S13_L001_R2_001.fastq.gz
+            3prime: 1-09-a_S13_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-09
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4200_E
+            WEIGHT: 1.42
+            AGE_REP: 39-A
+    1-10-a-2:
+        reads:
+            dir: reads/1-10-a-2
+            5prime: 1-10-a_S14_L001_R2_001.fastq.gz
+            3prime: 1-10-a_S14_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-10
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4131_E
+            WEIGHT: 1.27
+            AGE_REP: 39-A
+    2-01-a-2:
+        reads:
+            dir: reads/2-01-a-2
+            5prime: 2-01-a_S15_L001_R2_001.fastq.gz
+            3prime: 2-01-a_S15_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-01
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4159_E
+            WEIGHT: 1.37
+            AGE_REP: 56-A
+    2-02-a-2:
+        reads:
+            dir: reads/2-02-a-2
+            5prime: 2-02-a_S16_L001_R2_001.fastq.gz
+            3prime: 2-02-a_S16_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-02
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4179_E
+            WEIGHT: 1.47
+            AGE_REP: 56-A
+    2-03-a-2:
+        reads:
+            dir: reads/2-03-a-2
+            5prime: 2-03-a_S17_L001_R2_001.fastq.gz
+            3prime: 2-03-a_S17_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-03
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4152_E
+            WEIGHT: 1.33
+            AGE_REP: 56-A
+    2-04-a-2:
+        reads:
+            dir: reads/2-04-a-2
+            5prime: 2-04-a_S18_L001_R2_001.fastq.gz
+            3prime: 2-04-a_S18_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-04
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4132_E
+            WEIGHT: 1.35
+            AGE_REP: 56-A
+    2-05-a-2:
+        reads:
+            dir: reads/2-05-a-2
+            5prime: 2-05-a_S19_L001_R2_001.fastq.gz
+            3prime: 2-05-a_S19_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-05
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4177_E
+            WEIGHT: 1.22
+            AGE_REP: 56-A
+    2-06-a-2:
+        reads:
+            dir: reads/2-06-a-2
+            5prime: 2-06-a_S20_L001_R2_001.fastq.gz
+            3prime: 2-06-a_S20_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-06
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4158_E
+            WEIGHT: 1.51
+            AGE_REP: 56-A
+    2-07-a-2:
+        reads:
+            dir: reads/2-07-a-2
+            5prime: 2-07-a_S25_L001_R2_001.fastq.gz
+            3prime: 2-07-a_S25_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-07
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4182_E
+            WEIGHT: 1.12
+            AGE_REP: 56-A
+    2-08-a-2:
+        reads:
+            dir: reads/2-08-a-2
+            5prime: 2-08-a_S26_L001_R2_001.fastq.gz
+            3prime: 2-08-a_S26_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-08
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4202_E
+            WEIGHT: 1.54
+            AGE_REP: 56-A
+    2-09-a-2:
+        reads:
+            dir: reads/2-09-a-2
+            5prime: 2-09-a_S27_L001_R2_001.fastq.gz
+            3prime: 2-09-a_S27_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-09
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4143_E
+            WEIGHT: 1.28
+            AGE_REP: 56-A
+    2-10-a-2:
+        reads:
+            dir: reads/2-10-a-2
+            5prime: 2-10-a_S28_L001_R2_001.fastq.gz
+            3prime: 2-10-a_S28_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-10
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4201_E
+            WEIGHT: 1.55
+            AGE_REP: 56-A
+    3-01-a-2:
+        reads:
+            dir: reads/3-01-a-2
+            5prime: 3-01-a_S29_L001_R2_001.fastq.gz
+            3prime: 3-01-a_S29_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-01
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4155_E
+            WEIGHT: 2.06
+            AGE_REP: 73-A
+    3-02-a-2:
+        reads:
+            dir: reads/3-02-a-2
+            5prime: 3-02-a_S30_L001_R2_001.fastq.gz
+            3prime: 3-02-a_S30_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-02
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4193_E
+            WEIGHT: 1.92
+            AGE_REP: 73-A
+    3-03-a-2:
+        reads:
+            dir: reads/3-03-a-2
+            5prime: 3-03-a_S31_L001_R2_001.fastq.gz
+            3prime: 3-03-a_S31_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-03
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4170_E
+            WEIGHT: 1.80
+            AGE_REP: 73-A
+    3-04-a-2:
+        reads:
+            dir: reads/3-04-a-2
+            5prime: 3-04-a_S32_L001_R2_001.fastq.gz
+            3prime: 3-04-a_S32_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-04
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4135_E
+            WEIGHT: 1.65
+            AGE_REP: 73-A
+    3-05-a-2:
+        reads:
+            dir: reads/3-05-a-2
+            5prime: 3-05-a_S37_L001_R2_001.fastq.gz
+            3prime: 3-05-a_S37_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-05
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4190_E
+            WEIGHT: 1.87
+            AGE_REP: 73-A
+    3-06-a-2:
+        reads:
+            dir: reads/3-06-a-2
+            5prime: 3-06-a_S38_L001_R2_001.fastq.gz
+            3prime: 3-06-a_S38_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-06
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4099_E
+            WEIGHT: 1.94
+            AGE_REP: 73-A
+    3-07-a-2:
+        reads:
+            dir: reads/3-07-a-2
+            5prime: 3-07-a_S39_L001_R2_001.fastq.gz
+            3prime: 3-07-a_S39_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-07
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4198_E
+            WEIGHT: 1.49
+            AGE_REP: 73-A
+    3-08-a-2:
+        reads:
+            dir: reads/3-08-a-2
+            5prime: 3-08-a_S40_L001_R2_001.fastq.gz
+            3prime: 3-08-a_S40_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-08
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4024_E
+            WEIGHT: 1.73
+            AGE_REP: 73-A
+    3-09-a-2:
+        reads:
+            dir: reads/3-09-a-2
+            5prime: 3-09-a_S41_L001_R2_001.fastq.gz
+            3prime: 3-09-a_S41_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-09
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4044_E
+            WEIGHT: 1.53
+            AGE_REP: 73-A
+    3-10-a-2:
+        reads:
+            dir: reads/3-10-a-2
+            5prime: 3-10-a_S42_L001_R2_001.fastq.gz
+            3prime: 3-10-a_S42_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-10
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4177_E
+            WEIGHT: 1.57
+            AGE_REP: 73-A
+    4-01-a-2:
+        reads:
+            dir: reads/4-01-a-2
+            5prime: 4-01-a_S43_L001_R2_001.fastq.gz
+            3prime: 4-01-a_S43_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-01
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4173_E
+            WEIGHT: 2.20
+            AGE_REP: 128-A
+    4-02-a-2:
+        reads:
+            dir: reads/4-02-a-2
+            5prime: 4-02-a_S44_L001_R2_001.fastq.gz
+            3prime: 4-02-a_S44_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-02
+            REP: A
+            RUN: 2
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4197_E
+            WEIGHT: 2.40
+            AGE_REP: 128-A
+    1-01-b-2:
+        reads:
+            dir: reads/1-01-b-2
+            5prime: 1-01-b_S96_L001_R2_001.fastq.gz
+            3prime: 1-01-b_S96_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-01
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4194_E
+            WEIGHT: 1.24
+            AGE_REP: 39-B
+    1-02-b-2:
+        reads:
+            dir: reads/1-02-b-2
+            5prime: 1-02-b_S95_L001_R2_001.fastq.gz
+            3prime: 1-02-b_S95_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-02
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4107_E
+            WEIGHT: 1.39
+            AGE_REP: 39-B
+    1-03-b-2:
+        reads:
+            dir: reads/1-03-b-2
+            5prime: 1-03-b_S94_L001_R2_001.fastq.gz
+            3prime: 1-03-b_S94_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-03
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4127_E
+            WEIGHT: 1.29
+            AGE_REP: 39-B
+    1-04-b-2:
+        reads:
+            dir: reads/1-04-b-2
+            5prime: 1-04-b_S93_L001_R2_001.fastq.gz
+            3prime: 1-04-b_S93_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-04
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4204_E
+            WEIGHT: 1.35
+            AGE_REP: 39-B
+    1-05-b-2:
+        reads:
+            dir: reads/1-05-b-2
+            5prime: 1-05-b_S92_L001_R2_001.fastq.gz
+            3prime: 1-05-b_S92_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-05
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4189_E
+            WEIGHT: 1.43
+            AGE_REP: 39-B
+    1-06-b-2:
+        reads:
+            dir: reads/1-06-b-2
+            5prime: 1-06-b_S91_L001_R2_001.fastq.gz
+            3prime: 1-06-b_S91_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-06
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4160_E
+            WEIGHT: 0.68
+            AGE_REP: 39-B
+    1-07-b-2:
+        reads:
+            dir: reads/1-07-b-2
+            5prime: 1-07-b_S90_L001_R2_001.fastq.gz
+            3prime: 1-07-b_S90_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-07
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4164_E
+            WEIGHT: 1.57
+            AGE_REP: 39-B
+    1-08-b-2:
+        reads:
+            dir: reads/1-08-b-2
+            5prime: 1-08-b_S89_L001_R2_001.fastq.gz
+            3prime: 1-08-b_S89_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-08
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4171_E
+            WEIGHT: 1.40
+            AGE_REP: 39-B
+    1-09-b-2:
+        reads:
+            dir: reads/1-09-b-2
+            5prime: 1-09-b_S84_L001_R2_001.fastq.gz
+            3prime: 1-09-b_S84_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-09
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4200_E
+            WEIGHT: 1.42
+            AGE_REP: 39-B
+    1-10-b-2:
+        reads:
+            dir: reads/1-10-b-2
+            5prime: 1-10-b_S83_L001_R2_001.fastq.gz
+            3prime: 1-10-b_S83_L001_R1_001.fastq.gz
+        info:
+            FISH: 1-10
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-06-17"
+            AGE_DAYS: 39
+            ID: grz-AD_4131_E
+            WEIGHT: 1.27
+            AGE_REP: 39-B
+    2-01-b-2:
+        reads:
+            dir: reads/2-01-b-2
+            5prime: 2-01-b_S82_L001_R2_001.fastq.gz
+            3prime: 2-01-b_S82_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-01
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4159_E
+            WEIGHT: 1.37
+            AGE_REP: 56-B
+    2-02-b-2:
+        reads:
+            dir: reads/2-02-b-2
+            5prime: 2-02-b_S81_L001_R2_001.fastq.gz
+            3prime: 2-02-b_S81_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-02
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4179_E
+            WEIGHT: 1.47
+            AGE_REP: 56-B
+    2-03-b-2:
+        reads:
+            dir: reads/2-03-b-2
+            5prime: 2-03-b_S80_L001_R2_001.fastq.gz
+            3prime: 2-03-b_S80_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-03
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4152_E
+            WEIGHT: 1.33
+            AGE_REP: 56-B
+    2-04-b-2:
+        reads:
+            dir: reads/2-04-b-2
+            5prime: 2-04-b_S79_L001_R2_001.fastq.gz
+            3prime: 2-04-b_S79_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-04
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4132_E
+            WEIGHT: 1.35
+            AGE_REP: 56-B
+    2-05-b-2:
+        reads:
+            dir: reads/2-05-b-2
+            5prime: 2-05-b_S78_L001_R2_001.fastq.gz
+            3prime: 2-05-b_S78_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-05
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4177_E
+            WEIGHT: 1.22
+            AGE_REP: 56-B
+    2-06-b-2:
+        reads:
+            dir: reads/2-06-b-2
+            5prime: 2-06-b_S77_L001_R2_001.fastq.gz
+            3prime: 2-06-b_S77_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-06
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4158_E
+            WEIGHT: 1.51
+            AGE_REP: 56-B
+    2-07-b-2:
+        reads:
+            dir: reads/2-07-b-2
+            5prime: 2-07-b_S72_L001_R2_001.fastq.gz
+            3prime: 2-07-b_S72_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-07
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4182_E
+            WEIGHT: 1.12
+            AGE_REP: 56-B
+    2-08-b-2:
+        reads:
+            dir: reads/2-08-b-2
+            5prime: 2-08-b_S71_L001_R2_001.fastq.gz
+            3prime: 2-08-b_S71_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-08
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4202_E
+            WEIGHT: 1.54
+            AGE_REP: 56-B
+    2-09-b-2:
+        reads:
+            dir: reads/2-09-b-2
+            5prime: 2-09-b_S70_L001_R2_001.fastq.gz
+            3prime: 2-09-b_S70_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-09
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4143_E
+            WEIGHT: 1.28
+            AGE_REP: 56-B
+    2-10-b-2:
+        reads:
+            dir: reads/2-10-b-2
+            5prime: 2-10-b_S69_L001_R2_001.fastq.gz
+            3prime: 2-10-b_S69_L001_R1_001.fastq.gz
+        info:
+            FISH: 2-10
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-04"
+            AGE_DAYS: 56
+            ID: grz-AD_4201_E
+            WEIGHT: 1.55
+            AGE_REP: 56-B
+    3-01-b-2:
+        reads:
+            dir: reads/3-01-b-2
+            5prime: 3-01-b_S68_L001_R2_001.fastq.gz
+            3prime: 3-01-b_S68_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-01
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4155_E
+            WEIGHT: 2.06
+            AGE_REP: 73-B
+    3-02-b-2:
+        reads:
+            dir: reads/3-02-b-2
+            5prime: 3-02-b_S67_L001_R2_001.fastq.gz
+            3prime: 3-02-b_S67_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-02
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4193_E
+            WEIGHT: 1.92
+            AGE_REP: 73-B
+    3-03-b-2:
+        reads:
+            dir: reads/3-03-b-2
+            5prime: 3-03-b_S66_L001_R2_001.fastq.gz
+            3prime: 3-03-b_S66_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-03
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4170_E
+            WEIGHT: 1.80
+            AGE_REP: 73-B
+    3-04-b-2:
+        reads:
+            dir: reads/3-04-b-2
+            5prime: 3-04-b_S65_L001_R2_001.fastq.gz
+            3prime: 3-04-b_S65_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-04
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4135_E
+            WEIGHT: 1.65
+            AGE_REP: 73-B
+    3-05-b-2:
+        reads:
+            dir: reads/3-05-b-2
+            5prime: 3-05-b_S60_L001_R2_001.fastq.gz
+            3prime: 3-05-b_S60_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-05
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4190_E
+            WEIGHT: 1.87
+            AGE_REP: 73-B
+    3-06-b-2:
+        reads:
+            dir: reads/3-06-b-2
+            5prime: 3-06-b_S59_L001_R2_001.fastq.gz
+            3prime: 3-06-b_S59_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-06
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4099_E
+            WEIGHT: 1.94
+            AGE_REP: 73-B
+    3-07-b-2:
+        reads:
+            dir: reads/3-07-b-2
+            5prime: 3-07-b_S58_L001_R2_001.fastq.gz
+            3prime: 3-07-b_S58_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-07
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4198_E
+            WEIGHT: 1.49
+            AGE_REP: 73-B
+    3-08-b-2:
+        reads:
+            dir: reads/3-08-b-2
+            5prime: 3-08-b_S57_L001_R2_001.fastq.gz
+            3prime: 3-08-b_S57_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-08
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4024_E
+            WEIGHT: 1.73
+            AGE_REP: 73-B
+    3-09-b-2:
+        reads:
+            dir: reads/3-09-b-2
+            5prime: 3-09-b_S56_L001_R2_001.fastq.gz
+            3prime: 3-09-b_S56_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-09
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4044_E
+            WEIGHT: 1.53
+            AGE_REP: 73-B
+    3-10-b-2:
+        reads:
+            dir: reads/3-10-b-2
+            5prime: 3-10-b_S55_L001_R2_001.fastq.gz
+            3prime: 3-10-b_S55_L001_R1_001.fastq.gz
+        info:
+            FISH: 3-10
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-07-21"
+            AGE_DAYS: 73
+            ID: grz-AD_4177_E
+            WEIGHT: 1.57
+            AGE_REP: 73-B
+    4-01-b-2:
+        reads:
+            dir: reads/4-01-b-2
+            5prime: 4-01-b_S54_L001_R2_001.fastq.gz
+            3prime: 4-01-b_S54_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-01
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4173_E
+            WEIGHT: 2.20
+            AGE_REP: 128-B
+    4-02-b-2:
+        reads:
+            dir: reads/4-02-b-2
+            5prime: 4-02-b_S53_L001_R2_001.fastq.gz
+            3prime: 4-02-b_S53_L001_R1_001.fastq.gz
+        info:
+            FISH: 4-02
+            REP: B
+            RUN: 2
+            DEATH_DATE: "2016-09-14"
+            AGE_DAYS: 128
+            ID: grz-AD_4197_E
+            WEIGHT: 2.40
+            AGE_REP: 128-B
+
+# Key(s) to split aggregate data on during pRESTO pre-processing
+# (e.g. to collapse sequencing replicates)
+info_key_replicate: "FISH REP"
+# Key(s) to split aggregate data on to obtain biological individuals
+# (e.g. for clonotyping)
+info_key_individual: "FISH"
+# Key(s) to aggregate on for read counting (generally SAMPLE, REPLICATE, or
+# INDIVIDUAL)
+count_on: "REPLICATE"
+
+##############################################################################
+## REFERENCE FILES
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# GERMLINE DATABASES
+# ----------------------------------------------------------------------------
+# Specify input paths for IGH V, D, J and C-sequences from reference database
+# ----------------------------------------------------------------------------
+
+germline_segments:
+    v: source/source/input_files/vdj/vh_imgt.fasta
+    d: source/source/input_files/vdj/dh.fasta
+    j: source/source/input_files/vdj/jh.fasta
+
+# ----------------------------------------------------------------------------
+# AUXILIARY FILE
+# ----------------------------------------------------------------------------
+# Specify input path for J-auxiliary file (for IgBLAST alignment)
+# ----------------------------------------------------------------------------
+
+auxiliary_file: source/source/input_files/vdj/jh_aux.txt
+
+# ----------------------------------------------------------------------------
+# PRIMERS AND OLIGOS
+# ----------------------------------------------------------------------------
+# Specify input path for TSA sequence file and 5'/3' primer sequences
+# ----------------------------------------------------------------------------
+
+primers:
+    c: source/source/input_files/oligos/cprimers.fasta
+    tsa: source/source/input_files/oligos/m1s.fasta
+
+tsa: source/source/input_files/oligos/tsa.fasta
+
+##############################################################################
+## PRESTO CONFIGURATION
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# PRESTO PRE-PROCESSING PARAMETERS
+# ----------------------------------------------------------------------------
+# filter_qual: Quality threshold for read filtering
+# tsa_barcode_length: Distance from end of fixed TSA primer sequence to end
+#       of UMI (counting from 0)
+# tsa_max_error: Maximum error tolerance for UMI extraction during primer
+#       masking (high = tolerant; high by default)
+# pairseq_coord: Co-ordinate system for barcode unification; use "illumina"
+#       for raw sequencing data, "SRA" for SRA-downloaded data
+# build_consensus_max_error: Maximum error tolerance for MIG clustering
+#       (high = tolerant; low by default)
+# build_consensus_max_gap: Maximum gap *rate* for MIG clustering
+#       (high = tolerant)
+# collapse_seq_max_gap: Maximum gap *number* for sequence collapse
+#       (high = tolerant)
+# ----------------------------------------------------------------------------
+# TODO: Add params for primer start co-ordinates?
+
+presto_params:
+    filter_qual: 20 
+    tsa_barcode_length: 16
+    tsa_max_error: 0.5
+    cluster_umis: True
+    cluster_barcodes_pident: 0.9 # TODO: Test this
+    cluster_sets_pident: 0.75 # TODO: Test this
+    pairseq_coord: "illumina"
+    build_consensus_max_error: 0.1 
+    build_consensus_max_gap: 0.5 
+    collapse_seq_max_gap: 20 
+
+presto_log_fields:
+    filter_seq: ID QUALITY #SEQ
+    mask_primers: ID PRIMER ERROR #SEQORIENT PRORIENT PRSTART INSEQ ALIGN OUTSEQ
+    cluster_sets: ID BARCODE SEQCOUNT CLUSTERS
+    mask_barcodes: ID PRIMER BARCODE ERROR #SEQORIENT PRORIENT PRSTART INSEQ ALIGN OUTSEQ
+    build_consensus: BARCODE SEQCOUNT CONSCOUNT ERROR # ID PRIMER PRCOUNT PRCONS PRFREQ CONSENSUS QUALITY
+    assemble_pairs: ID LENGTH OVERLAP ERROR PVALUE # FIELDS1 FIELDS2 SEQ1 SEQ2 ASSEMBLY QUALITY
+    split_seq: ID CONSCOUNT DUPCOUNT
+# TODO: Specify IgDiscover parameters, generate IgDiscover config file therefrom
+
+# TODO: Specify IgDiscover parameters, generate IgDiscover config file therefrom
+
+##############################################################################
+## CHANGE-O CONFIGURATION
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# SHAZAM NEAREST-NEIGHBOUR PARAMETERS
+# ----------------------------------------------------------------------------
+# Parameters to pass to DistToNearest for computing nearest-neighbours
+#
+# model: Distance model to use ("ham" = nucleotide Hamming distance,
+#       "aa" = amino-acid Hamming distance)
+# symmetry: Method for combining A -> B and B -> A distances
+#       ("min" = minimum, "avg" = average)
+# normalize: Normalisation method ("len" = by sequence length, 
+#       "none" = no normalisation)
+# ----------------------------------------------------------------------------
+
+dist_to_nearest:
+    model: "ham"
+    symmetry: "min"
+    normalize: "len"
+
+# ----------------------------------------------------------------------------
+# SHAZAM DISTANCE THRESHOLD PARAMETERS
+# ----------------------------------------------------------------------------
+# Parameters to pass to findThreshold for threshold inference for clonotyping
+#
+# method: Statistical method to use ("gmm": maximum-likelihood-model-based,
+#       "density": kernel-density-based)
+# model: Statistical distributions to fit to upper and lower curves
+#       ("norm-norm", "gamma-gamma", "gamma-norm" or "norm-gamma")
+# cutoff: Method for identifying threshold from fitted curves
+#       ("opt" = optimum sensitivity/specificity threshold,
+#       "intersect" = intersection of the two curves)
+# NB: model and cutoff only affect the result in gmm mode, not density mode
+# ----------------------------------------------------------------------------
+
+infer_cluster_threshold:
+    cutoff: "opt"
