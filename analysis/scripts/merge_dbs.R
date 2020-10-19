@@ -28,13 +28,15 @@ cat("done.\n")
 #==============================================================================
 
 # Check there is at least some input
+cat("Number of input paths:", length(input_paths),"\n")
 if (length(input_paths) == 0){
     cat("Error: No input files given!")
     stop()
 }
 
 # Ignore empty files
-input_paths <- input_paths[file.info(input_paths)$size != 0]
+file_sizes <- sapply(input_paths, function(p) file.info(p)$size)
+input_paths <- input_paths[file_sizes != 0]
 
 # If no non-empty files, stop here
 if (length(input_paths) == 0){
@@ -45,7 +47,7 @@ if (length(input_paths) == 0){
 # If only one non-empty file, just copy that
 } else if (length(input_paths) == 1){
     cat("Only one non-empty file; copying to output...")
-    file.copy(input_paths[1], output_path, overwrite = TRUE)
+    file.copy(input_paths[[1]], output_path, overwrite = TRUE)
     cat("done.\n")
 
 # Otherwise, read all files, join them and output

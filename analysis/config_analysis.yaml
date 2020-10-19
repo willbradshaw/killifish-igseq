@@ -26,13 +26,6 @@ data_changeo: # Change-O datasets
     gut_age: "../data_processed/changeo/gut-seqs-all.tsv.gz"
     gut_group: "../data_processed/changeo/gut-seqs-all.tsv.gz"
 
-data_igor: # IGoR reference files
-    V: "../data_raw/igor/v_no_imgt.fasta"
-    V_IMGT: "../data_raw/igor/v.fasta"
-    D: "../data_raw/igor/d_no_imgt.fasta"
-    J: "../data_raw/igor/j_no_imgt.fasta"
-    J_AUX: "../data_raw/igor/j.aux"
-
 ##############################################################################
 ## GROUP FILTERING SETTINGS
 ##############################################################################
@@ -96,13 +89,8 @@ group_between: # Internal group variables for diversity-spectrum calculation
 ## IGOR PARAMETERS
 ##############################################################################
 
-# Path to default IGoR model
-igor_default_model: ...
-
-# Datasets to include in IGoR analysis
-igor_datasets: ["pilot", "ageing"]
-
 # Groups to analyse
+# No "-" (hyphen) characters permitted in group fields
 igor_group_field:
     pilot: "AGE_DAYS"
     ageing: "AGE_DAYS"

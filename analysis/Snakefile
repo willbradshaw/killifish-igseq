@@ -28,26 +28,8 @@ import os, random
 # Set wildcard constraints
 #------------------------------------------------------------------------------
 
-fields_all = ["INDIVIDUAL"] + [str(x) for x in config["igor_group_field"].values()]
-fields_all = list(set(fields_all))
-values_group = [str(item) for sublist in config["igor_groups"].values() for item in sublist]
-values_indiv = [str(item) for sublist in config["igor_individuals"].values() for item in sublist]
-values_all = values_group + values_indiv
-values_all = list(set(values_all))
-
 wildcard_constraints:
     dataset = "|".join(config["data_changeo"]),
-    #field = "|".join(fields_all),
-    #value = "|".join(values_all),
-
-#wildcard_constraints:
-#    sample = "[^/]+",
-#    segment = "[vdj]",
-#    segments = "[vdjVDJ]+",
-#    set = "all|functional|nonfunctional",
-#    field = "|".join(["INDIVIDUAL",config["igor_group_field"]]),
-#    value = "|".join([str(i) for i in \
-#        config["igor_individuals"] + config["igor_groups"]]),
 
 #------------------------------------------------------------------------------
 # Set up directories
@@ -91,33 +73,33 @@ igor_path = os.path.join(out_dir_igor_split, "output/{outtype}.tsv.gz")
 rule all:
     input:
         # Diversity spectra
-#        expand(diversity_path, divdir = "clone", \
-#                dataset = config["diversity_datasets"]["clone"], \
-#                divtype = ["alpha", "solo"], optype = "summarised"),
-#        expand(diversity_path, divdir = "segment_all", \
-#                dataset = config["diversity_datasets"]["segment_all"], \
-#                divtype = ["alpha", "beta", "solo"], \
-#                optype  = ["summarised", "bootstrapped"]),
-#        expand(diversity_path, divdir = "segment_5plus", \
-#                dataset = config["diversity_datasets"]["segment_5plus"], \
-#                divtype = ["alpha", "beta", "solo"], \
-#                optype  = ["summarised", "bootstrapped"]),
-#        expand(diversity_path, divdir = "segment_4minus", \
-#                dataset = config["diversity_datasets"]["segment_4minus"], \
-#                divtype = ["alpha", "beta", "solo"], \
-#                optype  = ["summarised", "bootstrapped"]),
-#        # Diversity KW p-values
-#        expand(kw_path, divdir = "clone", \
-#                dataset = config["diversity_datasets"]["clone"]),
-#        expand(kw_path, divdir = "segment_all", \
-#                dataset = config["diversity_datasets"]["segment_all"]),
-#        expand(kw_path, divdir = "segment_5plus", \
-#                dataset = config["diversity_datasets"]["segment_5plus"]),
-#        expand(kw_path, divdir = "segment_4minus", \
-#                dataset = config["diversity_datasets"]["segment_4minus"]),
+        expand(diversity_path, divdir = "clone", \
+                dataset = config["diversity_datasets"]["clone"], \
+                divtype = ["alpha", "solo"], optype = "summarised"),
+        expand(diversity_path, divdir = "segment_all", \
+                dataset = config["diversity_datasets"]["segment_all"], \
+                divtype = ["alpha", "beta", "solo"], \
+                optype  = ["summarised", "bootstrapped"]),
+        expand(diversity_path, divdir = "segment_5plus", \
+                dataset = config["diversity_datasets"]["segment_5plus"], \
+                divtype = ["alpha", "beta", "solo"], \
+                optype  = ["summarised", "bootstrapped"]),
+        expand(diversity_path, divdir = "segment_4minus", \
+                dataset = config["diversity_datasets"]["segment_4minus"], \
+                divtype = ["alpha", "beta", "solo"], \
+                optype  = ["summarised", "bootstrapped"]),
+        # Diversity KW p-values
+        expand(kw_path, divdir = "clone", \
+                dataset = config["diversity_datasets"]["clone"]),
+        expand(kw_path, divdir = "segment_all", \
+                dataset = config["diversity_datasets"]["segment_all"]),
+        expand(kw_path, divdir = "segment_5plus", \
+                dataset = config["diversity_datasets"]["segment_5plus"]),
+        expand(kw_path, divdir = "segment_4minus", \
+                dataset = config["diversity_datasets"]["segment_4minus"]),
         # IGoR prep files
         expand(igor_path, outtype = ["entropies", "segments", "indels"], \
-                dataset = config["igor_datasets"], field = "INDIVIDUAL"),
+                dataset = config["igor_individuals"].keys(), field = "INDIVIDUAL"),
         expand(igor_path, zip, outtype = ["entropies"] * len(config["igor_group_field"]),
                 dataset = config["igor_group_field"].keys(),
                 field = config["igor_group_field"].values()),
@@ -208,9 +190,18 @@ rule diversity_bootstraps:
         group_between = lambda wildcards: config["group_between"][wildcards.dataset],
     script: os.path.join(script_dir, "compute_bootstraps.R")
 
+rule extract_bootstraps:
+    """Decompress bootstrap file for processing."""
+    input: out_dir_diversity + "_bootstraps.tsv.gz"
+    output: temp(out_dir_diversity + "_bootstraps.tsv")
+    log: log_dir_diversity + "_decompress-bootstraps.dbg"
+    conda: env_shell
+    shell:
+        "zcat {input} > {output} 2> {log}"
+
 rule diversity_table_bootstrapped:
     """Compute diversity scores for each bootstrap replicate."""
-    input: out_dir_diversity + "_bootstraps.tsv.gz"
+    input: out_dir_diversity + "_bootstraps.tsv"
     output:
         alpha = out_dir_diversity + "_diversity-alpha-bootstrapped.tsv.gz",
         beta = out_dir_diversity + "_diversity-beta-bootstrapped.tsv.gz",
@@ -468,9 +459,10 @@ rule igor_read_seqs:
         wd = lambda wildcards, output: out_dir_igor_run.format(\
             dataset = wildcards.dataset, field = wildcards.field, \
             value = wildcards.value),
+        igor = os.path.join(script_dir, "igor"),
     threads: config["threads"]["min"]
     shell:
-        "igor -set_wd {params.wd} -threads {threads} "
+        "{params.igor} -set_wd {params.wd} -threads {threads} "
         "-read_seqs {input} &> {log}"
 
 rule igor_align:
@@ -491,11 +483,12 @@ rule igor_align:
         wd = lambda wildcards, output: out_dir_igor_run.format(\
             dataset = wildcards.dataset, field = wildcards.field, \
             value = wildcards.value),
+        igor = os.path.join(script_dir, "igor"),
     conda: env_shell
     log: os.path.join(log_dir_igor_run, "align.dbg")
     threads: config["threads"]["med"]
     shell:
-        "igor -set_wd {params.wd} -threads {threads} "
+        "{params.igor} -set_wd {params.wd} -threads {threads} "
         "-set_genomic --V {input.v} --D {input.d} --J {input.j} "
         "-set_CDR3_anchors --V {input.vanchor} --J {input.janchor} "
         "-align --all &> {log}"
@@ -518,11 +511,12 @@ rule igor_infer_model:
         wd = lambda wildcards, output: out_dir_igor_run.format(\
             dataset = wildcards.dataset, field = wildcards.field, \
             value = wildcards.value),
+        igor = os.path.join(script_dir, "igor"),
     conda: env_shell
     log: os.path.join(log_dir_igor_run, "inference.dbg")
     threads: config["threads"]["max"]
     shell:
-        "igor -set_wd {params.wd} -threads {threads} "
+        "{params.igor} -set_wd {params.wd} -threads {threads} "
         "-set_custom_model {input.model} "
         "-set_genomic --V {input.v} --D {input.d} --J {input.j} "
         "-set_CDR3_anchors --V {input.vanchor} --J {input.janchor} "
@@ -549,11 +543,12 @@ rule igor_evaluate_model:
         wd = lambda wildcards, output: out_dir_igor_run.format(\
             dataset = wildcards.dataset, field = wildcards.field, \
             value = wildcards.value),
+        igor = os.path.join(script_dir, "igor"),
     log: os.path.join(log_dir_igor_run, "evaluate.dbg")
     conda: env_shell
     threads: config["threads"]["med"]
     shell:
-        "igor -set_wd {params.wd} -threads {threads} "
+        "{params.igor} -set_wd {params.wd} -threads {threads} "
         "-set_custom_model {input.params} {input.marginals} -evaluate "
         "-output --scenarios 5 --Pgen --coverage VJ_gene &> {log}"
 
