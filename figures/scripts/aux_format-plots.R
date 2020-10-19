@@ -8,7 +8,8 @@ load_packages <- function(package_list){
   }
 }
 
-packages_default <- c("alakazam", "tidyverse", "cowplot", "ape", "png",
+packages_default <- c("alakazam", "tibble", "dplyr", "tidyr", "readr", "ggplot2",
+                      "stringr", "cowplot", "ape", "png",
                       "grid", "reshape2", "tidytree", "ggtree")
 
 load_packages(packages_default)
@@ -90,11 +91,9 @@ signif_stars <- function(p){
 }
 
 save_fig <- function(path, plot, plot_height, plot_width = 11, device="png"){
-  for (d in device){
     ggsave(filename=path, plot = plot,
-           device = d, width = plot_width,
+           device = device, width = plot_width,
            height = plot_height, units = "cm", dpi = 320, limitsize=FALSE)
-  }
 }
 
 grid_fig <- function(..., ncol = 1, nrow = 1, labels = "AUTO", 

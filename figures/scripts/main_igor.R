@@ -187,8 +187,9 @@ cat("done.\n")
 # SAVE OUTPUT
 #==============================================================================
 
-cat("\nSaving output...")
-
-save_fig(snakemake@output[[1]], fig, plot_height, plot_width)
-
+cat("\nSaving PNG output...")
+save_fig(snakemake@output[["png"]], fig, plot_height, plot_width, device = "png")
+cat("done.\n")
+cat("\nSaving RDS output...")
+saveRDS(fig, snakemake@output[["rds"]])
 cat("done.\n")

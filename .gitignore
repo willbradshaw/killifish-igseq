@@ -5,3 +5,4 @@ figures/env/minicran_rdi_lib
 figures/env/minicran_rdi_repo
 *Rplots.pdf
 *.swp
+.Rhistory

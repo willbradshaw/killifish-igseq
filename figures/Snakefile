@@ -31,6 +31,7 @@ rule all:
         os.path.join(out_dir, "main_igrace-pipeline.png"),
         os.path.join(out_dir, "main_ageing-spectra.png"),
         os.path.join(out_dir, "main_igor.png"),
+        os.path.join(out_dir, "main_igor.rds"),
         os.path.join(out_dir, "main_gut-spectra.png"),
         os.path.join(out_dir, "main_rarefy-glm.png"),
         os.path.join(out_dir, "si_pilot-design.png"),
@@ -116,7 +117,9 @@ rule figures_main_igor:
         entropies_pilot_group = config["data_processed"]["pilot"]["igor_group_entropies"],
         entropies_ageing_solo = config["data_processed"]["ageing"]["igor_solo_entropies"],
         indels                = config["data_processed"]["pilot"]["igor_group_indels"],
-    output: os.path.join(out_dir, "main_igor.png")
+    output:
+        png = os.path.join(out_dir, "main_igor.png"),
+        rds = os.path.join(out_dir, "main_igor.rds"),
     log: os.path.join(log_dir, "main_igor.log")
     conda: env_main
     params:
@@ -127,6 +130,7 @@ rule figures_main_igor:
 rule figures_main_gut_spectra:
     """Generate intestinal repertoire ageing figure."""
     input:
+        rdi_queue = os.path.join(out_dir, "main_ageing-spectra.png"),
         design   = os.path.join(raw_dir, "gut-design.png"),
         repo_dir = os.path.join(env_dir, "minicran_rdi_repo"),
         lib_dir  = os.path.join(env_dir, "minicran_rdi_lib"),
@@ -245,6 +249,7 @@ rule figures_si_pilot_cor:
 rule figures_si_pilot_rdi:
     """Prepare RDI plots for pilot dataset."""
     input:
+        rdi_queue = os.path.join(out_dir, "main_gut-spectra.png"),
         repo_dir = os.path.join(env_dir, "minicran_rdi_repo"),
         lib_dir  = os.path.join(env_dir, "minicran_rdi_lib"),
         changeo_db = config["data_processed"]["pilot"]["changeo_db"],
@@ -338,6 +343,7 @@ rule figures_si_gut_kw_pvalues:
 rule figures_si_gut_mbt_spectra:
     """Generate microbiota-transfer spectrum figure."""
     input:
+        rdi_queue = os.path.join(out_dir, "si_pilot-rdi.png"),
         design   = os.path.join(raw_dir, "gut-design.png"),
         repo_dir = os.path.join(env_dir, "minicran_rdi_repo"),
         lib_dir  = os.path.join(env_dir, "minicran_rdi_lib"),
