@@ -3,6 +3,30 @@
 #######################################################################
 
 #==============================================================================
+# Auxiliary functions
+#==============================================================================
+
+load_packages <- function(package_list){
+  for (p in package_list){
+    suppressMessages(suppressWarnings(library(p, character.only = TRUE)))
+  }
+}
+
+assign_default <- function(key, default = NULL, ref = snakemake@params){
+  if (! key %in% names(ref)) return(default)
+  if (ref[[key]] %in% c("None", "NULL")) return(NULL)
+  return(ref[[key]])
+}
+
+#==============================================================================
+# Loading packages
+#==============================================================================
+
+packages_default <- c("dplyr", "readr", "shazam")
+# "alakazam", "stringr", "tidyr", "reshape2", "entropy", "stringi", "methods", "Biostrings",
+load_packages(packages_default)
+
+#==============================================================================
 # Preamble
 #==============================================================================
 
@@ -11,9 +35,6 @@ sink(logfile ,type = "output")
 sink(logfile, type = "message")
 
 cat("Preparing to run script...")
-
-# Source packages and auxiliary functions
-source("scripts/aux.R")
 
 # Configure input paths
 input_path <- snakemake@input[[1]]
@@ -95,7 +116,9 @@ tabs_col <- lapply(clncounts, function(c)
                                   breakTiesByColumns = break_ties_columns,
                                   expandedDb = expanded_db,
                                   nproc = snakemake@threads))
-tab_collapsed <- bind_rows(tabs_col)
+tab_collapsed <- bind_rows(tabs_col) %>%
+    rename(CLONAL_SEQUENCE = clonal_sequence,
+           CLONAL_GERMLINE = clonal_germline)
 cat("done.\n")
 
 # Remove residual ambiguous characters

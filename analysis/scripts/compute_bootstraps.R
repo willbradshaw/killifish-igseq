@@ -37,7 +37,7 @@ cat("done.\n")
 #==============================================================================
 
 #------------------------------------------------------------------------------
-# Private/auxiliary functions copied from Alakazam
+# Private/auxiliary functions copied from Alakazam (v. 0.2.10)
 #------------------------------------------------------------------------------
 
 checkColumns <- function (data, columns, logic = c("all", "any")){
@@ -107,6 +107,43 @@ adjustObservedAbundance <- function(x) {
     # Define adjusted relative abundance
     p <- x/n * (1 -  lambda * exp(-x))
     return(p)
+}
+
+calcCoverage <- function (x, r = 1){
+  if (r == 1) {
+    return(calcChao1Coverage(x))
+  }
+  x <- x[x >= 1]
+  n <- sum(x)
+  fr <- sum(x == r)
+  fs <- sum(x == r + 1)
+  if (fr == 0) {
+    stop("Cannot calculate coverage of order ", r, ". No abundance data with count=", 
+         r, ".")
+  }
+  if (fs == 0) {
+    stop("Cannot calculate coverage of order ", r, ". No abundance data with count=", 
+         r + 1, ".")
+  }
+  a <- factorial(r) * fr/sum(x[x >= r]^r)
+  b <- ((n - r) * fr/((n - r) * fr + (r + 1) * fs))^r
+  rC <- 1 - a * b
+  return(rC)
+}
+
+calcChao1Coverage <- function(x) {
+  x <- x[x >= 1]
+  n <- sum(x)
+  f1 <- sum(x == 1)
+  f2 <- sum(x == 2)
+  
+  if (f2 > 0) {
+    rC1 <- 1 - (f1 / n) * (((n - 1) * f1) / ((n - 1) * f1 + 2 * f2))
+  } else {
+    rC1 <- 1 - (f1 / n) * (((n - 1) * (f1 - 1)) / ((n - 1) * (f1 - 1) + 2))
+  }
+  
+  return(rC1)
 }
 
 #------------------------------------------------------------------------------
@@ -209,52 +246,72 @@ bootstrap_abundance <- function(nboot, clone_tab, group_tab, group_within_name,
 
 compute_inner_bootstrap <- function(nboot, clone_tab, group_tab, group_within_name,
                                     group_within_value, group_between_name,
-                                    clone_field){
+                                    clone_field, verbose){
   # For each inner group in an outer group, compute bootstrap counts
   # and return a concatenated counts table
   bootstraps <- tibble()
   gtab <- group_tab[group_tab[[group_within_name]] == group_within_value,]
-  for (g in gtab %>% pull(group_between_name) %>% unique){
-    sample_tab <- bootstrap_abundance(nboot, clone_tab, group_tab, group_within_name, 
+  gvec <- gtab %>% pull(group_between_name) %>% unique %>% sample
+  for (g in gvec){
+    if (verbose){
+        start <- proc.time()
+        msg_in <- paste0("\n\tComputing bootstraps for ", group_within_value,
+                         "/", g, "...")
+        cat(msg_in)
+    }
+    sample_tab <- bootstrap_abundance(nboot, clone_tab, group_tab, group_within_name,
                                       group_within_value, group_between_name,
                                       g, clone_field)
     bootstraps <- bind_rows(bootstraps, sample_tab)
+    if (verbose){
+        cat("done. (", timetaken(start), ")")
+    }
   }
+  gc(verbose=FALSE)
   return(bootstraps)
 }
 
 compute_outer_bootstrap <- function(nboot, clone_tab, group_tab, group_within_name,
-                                    group_between_name, clone_field){
+                                    group_between_name, clone_field, verbose){
   # Compute inner bootstrap values for each outer group and collate values
   # in a single table
   bootstraps <- tibble()
   for (G in group_tab %>% pull(group_within_name) %>% unique){
     sample_tab <- compute_inner_bootstrap(nboot, clone_tab, group_tab, group_within_name,
-                                          G, group_between_name, clone_field)
+                                          G, group_between_name, clone_field, verbose)
     bootstraps <- bind_rows(bootstraps, sample_tab)
   }
+  gc(verbose=FALSE)
   return(bootstraps)
 }
 
 compute_diversity_bootstraps <- function(tab, group_within, group_between,
                                          clone_field = "CLONE", nboot = 2000,
                                          copy_field = NULL, min_n = 30,
-                                         max_n = NULL, uniform = TRUE){
+                                         max_n = NULL, uniform = TRUE,
+                                         verbose = TRUE){
     # Compute bootstraps for diversity-curve estimation
     # Configure test variables
+    if (verbose) cat("\n\tChecking data...")
     data = check_data(tab, group_within, group_between,
                       clone_field, copy_field)
+    if (verbose) cat("done.")
     # Compute clone copy numbers for each group based on row numbers 
     # (if copy column is NULL) or copy column values
+    if (verbose) cat("\n\tGenerating clone table...")
     clone_tab <- make_clone_tab(data, group_within, group_between,
                                 clone_field, copy_field)
+    if (verbose) cat("done.")
     # Count sequences in each group
+    if (verbose) cat("\n\tGenerating group table...")
     group_tab <- make_group_tab(clone_tab, group_within, group_between, min_n,
                                 max_n, uniform)
+    if (verbose) cat("done.")
     # Generate table of bootstrap counts over all groupings
     bootstraps <- compute_outer_bootstrap(nboot, clone_tab, group_tab,
                                           group_within, group_between,
-                                          clone_field)
+                                          clone_field, verbose)
+    gc(verbose=FALSE)
     return(bootstraps)
 }
 
@@ -277,8 +334,8 @@ cat("Input dimensions:", dim(tab), "\n")
 cat("\nComputing bootstrap table...")
 bootstraps <- compute_diversity_bootstraps(tab, group_within, group_between,
                                            clone_field, nboot, NULL,
-                                           min_n, max_n, TRUE)
-cat("done.\n")
+                                           min_n, max_n, TRUE, TRUE)
+cat("\n...done.\n") # If not verbose, remove the first line break
 
 #==============================================================================
 # Save output

@@ -31,12 +31,23 @@ step_q <- snakemake@params[["step_q"]]
 clone_field <- snakemake@params[["clone_field"]]
 group_within <- snakemake@params[["group_within"]]
 group_between <- snakemake@params[["group_between"]]
+q <- q_range(min_q, max_q, step_q)
 
 cat("done.\n")
 
 #==============================================================================
 # Auxiliary functions
 #==============================================================================
+
+calcDiversity <- function(p, q){
+  # Hill diversity function from Alakazam (v. 0.2.10)
+  q[q == 1] <- 0.9999
+  p <- p[p > 0]
+  p <- p/sum(p)
+  D <- sapply(q, function(x) sum(p^x)^(1/(1 - x)))
+  return(D)
+}
+
 
 compute_solo_diversity_bootstrap <- function(bootstraps, group_within,
                                              group_between, clone_field, Q){
@@ -112,7 +123,6 @@ cat("Input dimensions:", dim(bootstraps), "\n")
 
 # Compute per-replicate diversity spectra
 cat("\nComputing alpha-diversities...")
-q <- q_range(min_q, max_q, step_q)
 alpha_div_bs <- compute_alpha_diversity_bootstrap(bootstraps, group_within,
                                                   group_between, 
                                                   clone_field, q$range)

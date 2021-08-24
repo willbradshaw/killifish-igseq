@@ -2,7 +2,10 @@ channels:
       - conda-forge
       - bioconda
 dependencies:
-     - python == 2.7.14
-     - numpy == 1.14.3
-     - matplotlib == 2.2.2
-     - pandas == 0.23.0
+     - python <= 2.7.18
+     - numpy
+     - matplotlib
+     - pandas
+       #- numpy == 1.14.3
+       #- matplotlib == 2.2.2
+       #- pandas == 0.23.0

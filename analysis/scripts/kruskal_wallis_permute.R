@@ -105,14 +105,14 @@ kruskal_permute <- function(div_tab, permute_id, group_within,
     # Permute a diversity spectrum dataset and perform KW test
     if (verbose){
         start <- proc.time()
-        msg_in <- paste0("Initialising permutation ", permute_id, ": ", date())
+        msg_in <- paste0("\n\tInitialising permutation ", permute_id, ": ", date())
         cat(msg_in)
     }
     permute_tab <- permute(div_tab, permute_id, group_within, group_between)
     kw_tab <- kruskal_multi(permute_tab, group_within, group_between) %>% 
         dplyr::group_by(Q,PERMUTE) %>% summarise(P = min(P))
     if (verbose){
-        msg_out <- paste0("Finished permutation ", permute_id, ": ", date(),
+        msg_out <- paste0("\n\tFinished permutation ", permute_id, ": ", date(),
                           " (", timetaken(start), ")")
         cat(msg_out)
     }
@@ -144,7 +144,7 @@ kruskal_multi <- function(div_tab, group_within, group_between){
                                 tab_groups) %>% as_tibble %>%
         dplyr::mutate(Q = tab_spread$Q, PERMUTE=tab_spread$PERMUTE,
                ITER = tab_spread$ITER)
-    cat(colnames(tab_kw))
+    #cat(colnames(tab_kw))
     tab_kw <- dplyr::rename(tab_kw, P = "pval", H = "stat", EBP = "ebp")
     return(tab_kw)
 }
@@ -186,6 +186,7 @@ tab_pkw_true_all <- bind_rows(tab_pkw_min, tab_pkw_avg_d) %>%
 cat("\n...done.\n")
 
 # Run permutations and get KW p-values for each
+cat("\nNumber of permutations to run:", n_permutes, "\n")
 cat("\nExecuting permutation tests...")
 tab_permutes <- make_permute_tabs(diversities_bootstrapped, n_permutes,
                                   group_within, group_between, verbose)
@@ -199,7 +200,7 @@ tab_pkw_permute_raw <- tab_pkw_min %>% dplyr::rename(P_TRUE = P) %>%
 tab_pkw_permute <- tab_pkw_permute_raw %>%
     dplyr::group_by(Q) %>% summarise(P = mean(P_LESS)) %>% 
     dplyr::mutate(METHOD = "KW permutation test")
-cat("done.\n")
+cat("\ndone.\n")
 
 # Concatenate different methods
 tab_pkw_out <- bind_rows(tab_pkw_true_all, tab_pkw_permute)

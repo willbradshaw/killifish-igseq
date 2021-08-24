@@ -12,14 +12,14 @@ load_packages <- function(package_list){
     }
 }
 
-packages_default <- c(#"genbankr", "BSgenome", "rentrez", "GenomicRanges", 
-                      "dplyr", "stringr", "tidyr", "readr", "Biostrings",
-                      "alakazam", "shazam", "stringi", "methods", "ggplot2",
-                      "gridExtra", "ggdendro", "reshape2", "entropy",
-                      "lazyeval", "HybridMTest")
+packages_default <- c("dplyr", "stringr", "tidyr", "readr", "Biostrings",
+                      "stringi", "methods", "reshape2", "entropy", "HybridMTest",
+                      "data.table")
+# "ggdendro", "gridExtra", , "lazyeval", "alakazam", "shazam",
+# "ggplot2",
 load_packages(packages_default)
 
-loadNamespace("alakazam")
+#loadNamespace("alakazam")
 
 #==============================================================================
 # Auxiliary functions

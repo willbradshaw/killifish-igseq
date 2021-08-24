@@ -6,3 +6,4 @@ figures/env/minicran_rdi_repo
 *Rplots.pdf
 *.swp
 .Rhistory
+.Rproj.user
