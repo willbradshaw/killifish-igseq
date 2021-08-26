@@ -50,12 +50,12 @@ log_dir_filter = os.path.join(log_dir, "filter/{dataset}")
 # Subdirectories for diversity analysis
 out_dir_diversity = os.path.join(out_dir, "diversity/{divdir}/{dataset}")
 log_dir_diversity = os.path.join(log_dir, "diversity/{divdir}/{dataset}")
-out_dir_div_split = out_dir_diversity + "_split"
-log_dir_div_split = log_dir_diversity + "_split"
-out_dir_div_run   = os.path.join(out_dir_div_split, "run_{value}")
-log_dir_div_run   = os.path.join(log_dir_div_split, "run_{value}")
-out_dir_div_boot  = os.path.join(out_dir_div_split, "bootstrap_{replicate}")
-log_dir_div_boot  = os.path.join(log_dir_div_split, "bootstrap_{replicate}")
+out_dir_div_split = os.path.join(out_dir_diversity, "split")
+log_dir_div_split = os.path.join(log_dir_diversity, "split")
+out_dir_div_boot = os.path.join(out_dir_diversity, "bootstraps/{value}")
+log_dir_div_boot = os.path.join(log_dir_diversity, "bootstraps/{value}")
+out_dir_div_run = os.path.join(out_dir_diversity, "run")
+log_dir_div_run = os.path.join(log_dir_diversity, "run")
 
 # Subdirectories for IGOR analysis
 out_dir_igor = os.path.join(out_dir, "igor")
@@ -105,11 +105,6 @@ def format_partial_dict(pattern, dict):
 def format_partial(pattern, **fill):
     """Call format_partial_dict on a list of named arguments."""
     return(format_partial_dict(pattern, fill))
-
-def wildcard_keys(wildcards):
-    """Get a list of valid wildcard keys from a wildcards object."""
-    return(wildcards._names.keys())
-# TODO: Cut this function (unused)
 
 def format_wildcards(pattern, wildcards, fields_fixed = {}):
     """Format a file pattern based on wildcards & specified fields."""
@@ -193,10 +188,14 @@ igor_path = os.path.join(out_dir_igor_split, "output/{outtype}.tsv.gz")
 rule all:
     input:
         # Checkpoint tests
-        expand(out_dir_diversity + "_outer-groups-aggregated.tsv.gz", \
+        expand(os.path.join(out_dir_diversity, "outer-groups-aggregated.tsv.gz"), \
             divdir = "segment_all", dataset = "gut_age"),
-        expand(out_dir_diversity + "_bootstraps-aggregated.tsv.gz", \
+        expand(os.path.join(out_dir_diversity, "bootstraps-aggregated.tsv.gz"), \
             divdir = "segment_all", dataset = "gut_age"),
+        expand(os.path.join(out_dir_diversity, "diversity-{divtype}-bootstrapped.tsv.gz"), \
+            divdir = "segment_all", dataset = "gut_age", divtype = "alpha"),
+        expand(os.path.join(out_dir_diversity, "diversity-{divtype}-summarised.tsv.gz"), \
+            divdir = "segment_all", dataset = "gut_age", divtype = "alpha"),
         # Diversity spectra
 #        expand(diversity_path, divdir = "clone", \
 #                dataset = "ageing", #divsets["clone"], \
@@ -313,7 +312,7 @@ checkpoint split_db_outer_groups:
     """Split repertoire DB by outer grouping field."""
     input: lambda wildcards: diversity_inputs[wildcards.divdir]
     output: directory(out_dir_div_split)
-    log: os.path.join(log_dir_div_split, "split-db.dbg")
+    log: os.path.join(log_dir_diversity, "split-db.dbg")
     conda: env_shell
     params:
         group_within = lambda wildcards: config["group_within"][wildcards.dataset],
@@ -348,8 +347,8 @@ aggregate_checkpoint_outer_groups_test = partial( \
 rule aggregate_db_outer_groups_test:
     """Test checkpoint by aggregating split outer-group files."""
     input: aggregate_checkpoint_outer_groups_test
-    output: out_dir_diversity + "_outer-groups-aggregated.tsv.gz"
-    log: log_dir_diversity + "_outer-groups-aggregated.dbg"
+    output: os.path.join(out_dir_diversity, "outer-groups-aggregated.tsv.gz")
+    log: os.path.join(log_dir_diversity, "outer-groups-aggregated.dbg")
     conda: env_r
     script: os.path.join(script_dir, "merge_dbs.R")
 
@@ -361,7 +360,7 @@ rule aggregate_db_outer_groups_test:
 # Output pattern
 replicate_field = "replicate"
 file_pattern_boot_reps = "bootstrap_{}.tsv.gz".format("{"+replicate_field+"}")
-checkpt_pattern_boot_reps = os.path.join(out_dir_div_run, \
+checkpt_pattern_boot_reps = os.path.join(out_dir_div_boot, \
     file_pattern_boot_reps)
 # All wildcards: {divdir}, {dataset}, {value}, {replicate}
 
@@ -369,8 +368,8 @@ checkpt_pattern_boot_reps = os.path.join(out_dir_div_run, \
 checkpoint bootstrap_replicates:
     """Carry out bootstrapping & save separately for each replicate."""
     input: checkpt_pattern_outer_groups
-    output: directory(out_dir_div_run)
-    log: os.path.join(log_dir_div_split, "{value}-bootstrap-replicates.dbg")
+    output: directory(out_dir_div_boot)
+    log: os.path.join(log_dir_div_boot, "bootstrap-replicates.dbg")
     conda: env_r
     params:
         min_n = config["div_parameters"]["min_n"],
@@ -388,30 +387,32 @@ aggregate_checkpoint_boot_reps = partial(aggregate_checkpoint, \
     checkpoint_id = "bootstrap_replicates", \
     checkpoint_pattern = file_pattern_boot_reps) # No target_field or fields_fixed
 
-# Complete aggregation functions (for testing)
+# Aggregate over replicates (for testing)
+file_boot_rep = "{value}_bootstraps-aggregated"
+out_boot_rep = os.path.join(out_dir_div_run, file_boot_rep + ".tsv.gz")
+log_boot_rep = os.path.join(log_dir_div_run, file_boot_rep + ".dbg")
 aggregate_checkpoint_boot_reps_test = partial( \
     aggregate_checkpoint_boot_reps, \
     expand_pattern = checkpt_pattern_boot_reps, \
     debug = True) # No expand_field
-aggregate_checkpoint_outer_groups_boot_reps_test = partial( \
-    aggregate_checkpoint_outer_groups, \
-    expand_pattern = os.path.join(out_dir_div_split, "{value}-bootstraps-aggregated.tsv.gz"), \
-    debug = True) # No expand_field
-
-# Aggregation rules (for testing)
-# NB: Likely to fail on low-memory machines unless you cut the number of replicates
 rule aggregate_db_bootstrap_replicates_test_partial:
     """Test checkpoint by aggregating split bootstrap replicates."""
     input: aggregate_checkpoint_boot_reps_test
-    output: os.path.join(out_dir_div_split, "{value}-bootstraps-aggregated.tsv.gz")
-    log: os.path.join(log_dir_div_split, "{value}-bootstraps-aggregated.dbg")
+    output: out_boot_rep
+    log: log_boot_rep
     conda: env_r
     script: os.path.join(script_dir, "merge_dbs.R")
+
+# Aggregate over outer groups (for testing)
+aggregate_checkpoint_outer_groups_boot_reps_test = partial( \
+    aggregate_checkpoint_outer_groups, \
+    expand_pattern = out_boot_rep, \
+    debug = True) # No expand_field
 rule aggregate_db_bootstrap_replicates_test_full:
     """Test checkpoint by aggregating bootstrap replicates across outer groups."""
     input: aggregate_checkpoint_outer_groups_boot_reps_test
-    output: out_dir_diversity + "_bootstraps-aggregated.tsv.gz"
-    log: log_dir_diversity + "_bootstraps-aggregated.dbg"
+    output: os.path.join(out_dir_diversity, "bootstraps-aggregated.tsv.gz")
+    log: os.path.join(log_dir_diversity, "bootstraps-aggregated.dbg")
     conda: env_r
     script: os.path.join(script_dir, "merge_dbs.R")
 
@@ -420,18 +421,20 @@ rule aggregate_db_bootstrap_replicates_test_full:
 #-----------------------------------------------------------------------------
 
 # File patterns
-diversity_pattern_boot_reps = checkpt_pattern_boot_reps.replace("bootstrap", \
-    "diversity-{divtype}-bootstrapped")
+file_pattern_div = "{{value}}_diversity-{{divtype}}_{}".format("{"+replicate_field+"}")
+out_pattern_div = os.path.join(out_dir_div_run, file_pattern_div + ".tsv.gz")
+log_pattern_div = os.path.join(log_dir_div_run, file_pattern_div + ".dbg")
 
+# Generate bootstrapped diversity
 rule diversity_table_bootstrapped:
     """Compute diversity scores for each bootstrap replicate."""
     input: checkpt_pattern_boot_reps
     output:
-        alpha = diversity_pattern_boot_reps.format(divtype="alpha"),
-        beta = diversity_pattern_boot_reps.format(divtype="beta"),
-        gamma = diversity_pattern_boot_reps.format(divtype="gamma"),
-        solo = diversity_pattern_boot_reps.format(divtype="solo"),
-    log: os.path.join(log_dir_div_run, "diversity-bootstrapped_{replicate}.dbg")
+        alpha = format_partial(out_pattern_div, divtype="alpha"),
+        beta = format_partial(out_pattern_div, divtype="beta"),
+        gamma = format_partial(out_pattern_div, divtype="gamma"),
+        solo = format_partial(out_pattern_div, divtype="solo"),
+    log: format_partial(log_pattern_div, divtype = "all")
     conda: env_r
     params:
         min_q = config["div_parameters"]["min_q"],
@@ -441,54 +444,72 @@ rule diversity_table_bootstrapped:
         group_within = lambda wildcards: config["group_within"][wildcards.dataset],
         group_between = lambda wildcards: config["group_between"][wildcards.dataset],
     script: os.path.join(script_dir, "compute_diversity.R")
-# TODO: Aggregate and test
 
-#rule summarise_diversity:
-#    """Summarise bootstrapped diversity spectra."""
-#    input: os.path.join(out_dir_div_run, "diversity-{divtype}-bootstrapped.tsv.gz")
-#    output: os.path.join(out_dir_div_run, "diversity-{divtype}-summarised.tsv.gz")
-#    log: os.path.join(log_dir_div_run, "summarise-diversity-{divtype}.dbg")
-#    conda: env_r
-#    params:
-#        min_q = config["div_parameters"]["min_q"],
-#        max_q = config["div_parameters"]["max_q"],
-#        step_q = config["div_parameters"]["step_q"],
-#        ci = config["div_parameters"]["ci"],
-#        group_within = lambda wildcards: config["group_within"][wildcards.dataset],
-#        group_between = lambda wildcards: config["group_between"][wildcards.dataset],
-#    script: os.path.join(script_dir, "summarise_diversity.R")
-#
-#def aggregate_diversity_fn(wildcards):
-#    """Aggregate split diversity files."""
-#    # Get path to checkpoint directory
-#    check_out = checkpoints.bootstrap_split_db.get(**wildcards).output[0]
-#    # Prepare filename patterns (based on checkpoint rule output)
-#    dataset, divdir = wildcards.dataset, wildcards.divdir
-#    field = config["group_within"][wildcards.dataset]
-#    path_base = os.path.join(check_out, "{dataset}_{field}-{{value}}.tsv")
-#    path_fmt = path_base.format(dataset=dataset, divdir=divdir, field=field)
-#    # Prepare and return output file list (based on aggregation rule input)
-#    divtype,optype,value = wildcards.divtype, wildcards.optype, "{value}"
-#    path_out_base = os.path.join(out_dir_div_run, \
-#        "diversity-{divtype}-{optype}.tsv.gz")
-#    path_out = path_out_base.format(dataset=dataset, divdir=divdir, \
-#        value=value, divtype=divtype, optype=optype)
-#    out_values = glob_wildcards(path_fmt).value
-#    out_expand = expand(path_out, value = out_values)
-#    return(out_expand)
-#
-#rule aggregate_diversity_rule:
-#    """Aggregate split diversity files."""
-#    input: aggregate_diversity_fn
-#    output: out_dir_diversity + "_diversity-{divtype}-{optype}.tsv.gz"
-#    log: log_dir_diversity + "_aggregate-diversity-{divtype}-{optype}.dbg"
-#    conda: env_r
-#    script: os.path.join(script_dir, "merge_dbs.R")
-#
-##-----------------------------------------------------------------------------
-## Compute p-values for diversity differences using KW permutation tests
-##-----------------------------------------------------------------------------
-#
+# Aggregate across replicates
+aggregate_diversity_boot_reps = partial( \
+    aggregate_checkpoint_boot_reps, \
+    expand_pattern = out_pattern_div) # No expand_field or debug
+rule aggregate_diversity_boot_reps_rule:
+    """Aggregate bootstrapped diversity scores by bootstrap replicate."""
+    input: aggregate_diversity_boot_reps
+    output: os.path.join(out_dir_div_run, "{value}_diversity-{divtype}-bootstrapped.tsv.gz")
+    log: os.path.join(log_dir_div_run, "{value}_diversity-{divtype}-bootstrapped.dbg")
+    conda: env_r
+    script: os.path.join(script_dir, "merge_dbs.R")
+
+# Aggregate across outer groups
+aggregate_diversity_outer_groups_boot = partial( \
+    aggregate_checkpoint_outer_groups, \
+    expand_pattern = os.path.join(out_dir_div_run, \
+        "{value}_diversity-{divtype}-bootstrapped.tsv.gz")) # No expand_field or debug
+rule aggregate_diversity_outer_groups_boot_rule:
+    """Test checkpoint by aggregating bootstrap replicates across outer groups."""
+    input: aggregate_diversity_outer_groups_boot
+    output: os.path.join(out_dir_diversity, "diversity-{divtype}-bootstrapped.tsv.gz")
+    log: os.path.join(log_dir_diversity, "diversity-{divtype}-bootstrapped.dbg")
+    conda: env_r
+    script: os.path.join(script_dir, "merge_dbs.R")
+
+#-----------------------------------------------------------------------------
+# Summarise diversity across replicates for each outer group
+#-----------------------------------------------------------------------------
+
+rule summarise_diversity:
+    """Summarise bootstrapped diversity spectra."""
+    input: os.path.join(out_dir_div_run, "{value}_diversity-{divtype}-bootstrapped.tsv.gz")
+    output: os.path.join(out_dir_div_run, "{value}_diversity-{divtype}-summarised.tsv.gz")
+    log: os.path.join(log_dir_div_run, "{value}_diversity-{divtype}-summarised.dbg")
+    conda: env_r
+    params:
+        min_q = config["div_parameters"]["min_q"],
+        max_q = config["div_parameters"]["max_q"],
+        step_q = config["div_parameters"]["step_q"],
+        ci = config["div_parameters"]["ci"],
+        group_within = lambda wildcards: config["group_within"][wildcards.dataset],
+        group_between = lambda wildcards: config["group_between"][wildcards.dataset],
+    script: os.path.join(script_dir, "summarise_diversity.R")
+
+# Aggregate across outer groups (function)
+aggregate_diversity_outer_groups = partial( \
+    aggregate_checkpoint_outer_groups, \
+    expand_pattern = os.path.join(out_dir_div_run, \
+        "{value}_diversity-{divtype}-summarised.tsv.gz")) # No expand_field or debug
+
+# Aggregate across outer groups (rule)
+rule aggregate_diversity_outer_groups_rule:
+    """Test checkpoint by aggregating bootstrap replicates across outer groups."""
+    input: aggregate_diversity_outer_groups
+    output: os.path.join(out_dir_diversity, "diversity-{divtype}-summarised.tsv.gz")
+    log: os.path.join(log_dir_diversity, "diversity-{divtype}-summarised.dbg")
+    conda: env_r
+    script: os.path.join(script_dir, "merge_dbs.R")
+
+#-----------------------------------------------------------------------------
+# Compute p-values for diversity differences using KW permutation tests
+#-----------------------------------------------------------------------------
+
+# TODO: Write per-replicate KW script
+
 #rule clone_kruskal_wallis_permute:
 #    """Run Kruskal-Wallis permutation tests on bootstrapped solo diversities."""
 #    input: out_dir_diversity + "_diversity-solo-bootstrapped.tsv.gz"
