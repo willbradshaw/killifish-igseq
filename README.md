@@ -1,5 +1,6 @@
 # Extensive age-dependent loss of antibody diversity in naturally short-lived turquoise killifish
 [William J. Bradshaw](https://orcid.org/0000-0002-7345-3866), Michael L. Poeschla, Aleksandra Placzek, Samuel Kean, and [Dario Riccardo Valenzano](https://orcid.org/0000-0002-8761-8289)
+
 _eLife_ 2022; 11:e65117
 
 **DOI:** https://doi.org/10.7554/eLife.65117
